@@ -127,10 +127,20 @@ export default class Account extends BaseAPI {
                 routerConfigJson: JSON.stringify(routerConfig)
             });
 
-        return new RouterConfig(this.client_id, this.client_secret, {
-            ...response.content,
-            routerConfig: JSON.parse(response.content.routerConfigJson)
-        });
+        const {
+            routerConfigJson,
+            ...content
+        } = response.content;
+        const _routerConfig = JSON.parse(routerConfigJson);
+
+        return new RouterConfig(
+            this.client_id,
+            this.client_secret,
+            {
+                ...content,
+                routerConfig: _routerConfig
+            }
+        );
     }
 
     /**
@@ -337,10 +347,20 @@ export default class Account extends BaseAPI {
         const response = await this.get<Starlink.Common.Content<Starlink.Management.APIResponse.RouterConfig>>(
             `/enterprise/v1/account/${this.accountNumber}/routers/configs/${configId}`);
 
-        return new RouterConfig(this.client_id, this.client_secret, {
-            ...response.content,
-            routerConfig: JSON.parse(response.content.routerConfigJson)
-        });
+        const {
+            routerConfigJson,
+            ...content
+        } = response.content;
+        const routerConfig = JSON.parse(routerConfigJson);
+
+        return new RouterConfig(
+            this.client_id,
+            this.client_secret,
+            {
+                ...content,
+                routerConfig
+            }
+        );
     }
 
     /**
@@ -373,14 +393,22 @@ export default class Account extends BaseAPI {
             response = await this.get(
                 `/enterprise/v1/account/${this.accountNumber}/routers/configs`, options);
 
-            return response.content.results.map(record =>
-                new RouterConfig(
+            return response.content.results.map(record => {
+                const {
+                    routerConfigJson,
+                    ...rest
+                } = record;
+                const routerConfig = JSON.parse(routerConfigJson);
+
+                return new RouterConfig(
                     this.client_id,
                     this.client_secret,
                     {
-                        ...record,
-                        routerConfig: JSON.parse(record.routerConfigJson)
-                    }));
+                        ...rest,
+                        routerConfig
+                    }
+                );
+            });
         } else {
             const results: RouterConfig[] = [];
             let page = 0;
@@ -391,15 +419,22 @@ export default class Account extends BaseAPI {
                         page: page++
                     });
 
-                results.push(...response.content.results.map(record =>
-                    new RouterConfig(
+                results.push(...response.content.results.map(record => {
+                    const {
+                        routerConfigJson,
+                        ...rest
+                    } = record;
+                    const routerConfig = JSON.parse(routerConfigJson);
+
+                    return new RouterConfig(
                         this.client_id,
                         this.client_secret,
                         {
-                            ...record,
-                            routerConfig: JSON.parse(record.routerConfigJson)
+                            ...rest,
+                            routerConfig
                         }
-                    )));
+                    );
+                }));
             } while (!response.content.isLastPage);
 
             if (results.length !== response.content.totalCount) {

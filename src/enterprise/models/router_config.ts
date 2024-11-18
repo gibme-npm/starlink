@@ -27,8 +27,6 @@ export default class RouterConfig extends BaseAPI {
         private routerConfig: Starlink.Management.Response.RouterConfig
     ) {
         super(client_id, client_secret);
-
-        delete (this.routerConfig as any).routerConfigJson;
     }
 
     public get accountNumber (): string {
@@ -69,12 +67,16 @@ export default class RouterConfig extends BaseAPI {
                     routerConfigJson: JSON.stringify(this.config)
                 });
 
-            this.routerConfig = {
-                ...response.content,
-                routerConfig: JSON.parse(response.content.routerConfigJson)
-            };
+            const {
+                routerConfigJson,
+                ...content
+            } = response.content;
+            const routerConfig = JSON.parse(routerConfigJson);
 
-            delete (this.routerConfig as any).routerConfigJson;
+            this.routerConfig = {
+                ...content,
+                routerConfig
+            };
 
             return true;
         } catch {
