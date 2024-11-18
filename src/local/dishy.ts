@@ -51,7 +51,7 @@ export default class Dishy extends GRPCApi {
         const response = await this.handle({ getHistory: {} });
 
         if (!response.dishGetHistory) {
-            throw new Error(`No diagnostics returned from ${this.host}:${this.port}`);
+            throw new Error(`No history returned from ${this.host}:${this.port}`);
         }
 
         return response.dishGetHistory;
@@ -66,7 +66,7 @@ export default class Dishy extends GRPCApi {
         const response = await this.handle({ getLocation: {} });
 
         if (!response.getLocation) {
-            throw new Error(`No diagnostics returned from ${this.host}:${this.port}`);
+            throw new Error(`No location returned from ${this.host}:${this.port}`);
         }
 
         return response.getLocation;
@@ -79,7 +79,7 @@ export default class Dishy extends GRPCApi {
         const response = await this.handle({ dishGetObstructionMap: {} });
 
         if (!response.dishGetObstructionMap) {
-            throw new Error(`No diagnostics returned from ${this.host}:${this.port}`);
+            throw new Error(`No obstruction map returned from ${this.host}:${this.port}`);
         }
 
         return response.dishGetObstructionMap;
@@ -92,7 +92,7 @@ export default class Dishy extends GRPCApi {
         const response = await this.handle({ getStatus: {} });
 
         if (!response.dishGetStatus) {
-            throw new Error(`No diagnostics returned from ${this.host}:${this.port}`);
+            throw new Error(`No status returned from ${this.host}:${this.port}`);
         }
 
         return response.dishGetStatus;
