@@ -869,23 +869,21 @@ export default class Account extends BaseAPI {
             UserTerminal: [],
             UserTerminalDataUsage: []
         };
-        const column_keys: any = {};
-        const alert_keys: any = {};
 
-        for (const key in response.metadata.enums.DeviceType) {
+        for (const key of Object.keys(response.metadata.enums.DeviceType)) {
+            const alertKeys = response.metadata.enums.AlertsByDeviceType[key] || {};
+            const columnKeys = response.data.columnNamesByDeviceType[key] || [];
             const type = response.metadata.enums.DeviceType[key];
 
             results[type] = [];
-            column_keys[type] = response.data.columnNamesByDeviceType[key] || [];
-            alert_keys[type] = response.metadata.enums.AlertsByDeviceType[key] || [];
 
-            const values = response.data.values.filter(value => value[0] === key);
+            const values = response.data.values.filter(([value]) => value === key);
 
             for (const value of values) {
-                const record: any = {};
+                const record: Record<string, Starlink.Telemetry.APIResponse.DataValue> = {};
 
-                for (let i = 1; i < column_keys[type].length; i++) {
-                    const column = column_keys[type][i];
+                for (let i = 1; i < columnKeys.length; i++) {
+                    const column = columnKeys[i];
 
                     record[column] = value[i];
                 }
@@ -895,7 +893,7 @@ export default class Account extends BaseAPI {
                         const alerts: string[] = [];
 
                         for (const alert of record.ActiveAlerts) {
-                            alerts.push(alert_keys[type][alert.toString()]);
+                            alerts.push(alertKeys[alert.toString()] || alert.toString());
                         }
 
                         record.ActiveAlerts = alerts;

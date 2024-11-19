@@ -347,17 +347,19 @@ export namespace Starlink {
 
     export namespace Telemetry {
         export namespace APIResponse {
+            export type DataValue = Array<number | string> | boolean | number | null | string;
+
             export interface Data {
                 data: {
-                    values: any[][];
+                    values: DataValue[][];
                     columnNamesByDeviceType: { [key: string]: string[] };
                 };
                 metadata: {
                     enums: {
                         DeviceType: { [key: string]: string };
-                        AlertsByDeviceType: { [key: string]: { [key: number]: string } }
-                    }
-                }
+                        AlertsByDeviceType: { [key: string]: { [key: string]: string } };
+                    };
+                };
             }
         }
 
