@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "noEmit": true,
+    "types": [
+      "@types/node"
+    ]
+  },
+  "include": [
+    "test"
+  ]
+}
