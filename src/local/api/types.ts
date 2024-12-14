@@ -18,37 +18,42 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import type { GetLocationResponse } from '../../protobuf/spacex/api/device/device';
 import type {
     DishGetDiagnosticsResponse,
     DishGetDiagnosticsResponse_Alerts,
-    DishGetDiagnosticsResponse_Location,
     DishGetDiagnosticsResponse_DisablementCode,
+    DishGetDiagnosticsResponse_Location,
     DishGetDiagnosticsResponse_TestResult,
-    DishGetHistoryResponse, DishGetStatusResponse, DishGetObstructionMapResponse
+    DishGetHistoryResponse,
+    DishGetObstructionMapResponse,
+    DishGetStatusResponse
 } from '../../protobuf/spacex/api/device/dish';
-import type { GetLocationResponse } from '../../protobuf/spacex/api/device/device';
 import type {
     WifiGetDiagnosticsResponse2,
     WifiGetDiagnosticsResponse2_Network
 } from '../../protobuf/spacex/api/device/wifi';
 
+/* eslint-disable no-use-before-define */
 export namespace StarlinkGRPC {
     export namespace Dishy {
         export type Alerts = DishGetDiagnosticsResponse_Alerts;
 
         export type DiagLocation = DishGetDiagnosticsResponse_Location;
 
+        export interface Diagnostics extends Omit<
+            DishGetDiagnosticsResponse,
+            'alerts' | 'disablementCode' | 'hardwareSelfTest' | 'location'
+        > {
+            alerts?: Alerts;
+            disablementCode: DisablementCode;
+            hardwareSelfTest: HardwareTestResult;
+            location?: DiagLocation;
+        }
+
         export type DisablementCode = DishGetDiagnosticsResponse_DisablementCode;
 
         export type HardwareTestResult = DishGetDiagnosticsResponse_TestResult;
-
-        export interface Diagnostics extends Omit<DishGetDiagnosticsResponse,
-            'alerts' | 'disablementCode' | 'location' | 'hardwareSelfTest'> {
-            alerts?: Alerts;
-            disablementCode: DisablementCode;
-            location?: DiagLocation;
-            hardwareSelfTest: HardwareTestResult;
-        }
 
         export type History = DishGetHistoryResponse;
 
@@ -60,10 +65,11 @@ export namespace StarlinkGRPC {
     }
 
     export namespace WifiRouter {
-        export type Network = WifiGetDiagnosticsResponse2_Network;
-
         export interface Diagnostics extends Omit<WifiGetDiagnosticsResponse2, 'networks'> {
             networks: Network[];
         }
+
+        export type Network = WifiGetDiagnosticsResponse2_Network;
     }
 }
+/* eslint-enable no-use-before-define */

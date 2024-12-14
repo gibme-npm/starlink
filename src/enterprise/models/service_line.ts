@@ -19,21 +19,10 @@
 // SOFTWARE.
 
 import BaseAPI, { Starlink } from '../api/base_api';
+
 import type { UserTerminal } from './user_terminal';
 
 export default class ServiceLine extends BaseAPI {
-    private nickname_updated = false;
-    private product_updated = false;
-    private public_ip_updated = false;
-
-    constructor (
-        client_id: string,
-        client_secret: string,
-        private serviceLine: Starlink.Management.Response.ServiceLine
-    ) {
-        super(client_id, client_secret);
-    }
-
     public get accountNumber (): string {
         return this.serviceLine.accountNumber;
     }
@@ -102,6 +91,23 @@ export default class ServiceLine extends BaseAPI {
         return this.serviceLine.startDate;
     }
 
+    private nickname_updated = false;
+
+    private product_updated = false;
+
+    private public_ip_updated = false;
+
+    constructor (
+        client_id: string,
+        client_secret: string,
+        private serviceLine: Starlink.Management.Response.ServiceLine
+    ) {
+        super(
+            client_id,
+            client_secret
+        );
+    }
+
     /**
      * Adds the specified terminal to this service line
      *
@@ -136,45 +142,46 @@ export default class ServiceLine extends BaseAPI {
         /**
          * When true; unknown data bins will be included in results.
          */
-        includeUnknownDataBin: boolean
+        includeUnknownDataBin: boolean;
     }> = {}): Promise<Starlink.Management.Response.ServiceLineDataUsage> {
         const response = await this.get<Starlink.Common.Content<Starlink.Management.APIResponse.ServiceLineDataUsage>>(
             `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/billing-cycle/all`,
-            options);
+            options
+        );
 
         const record = response.content;
 
         return {
             ...record,
-            startDate: new Date(record.startDate),
-            endDate: new Date(record.endDate),
-            lastUpdated: record.lastUpdated !== null ? new Date(record.lastUpdated) : null,
-            servicePlan: {
-                ...record.servicePlan,
-                activeFrom: record.servicePlan.activeFrom !== null ? new Date(record.servicePlan.activeFrom) : null,
-                subscriptionActiveFrom: record.servicePlan.subscriptionActiveFrom !== null
-                    ? new Date(record.servicePlan.subscriptionActiveFrom)
-                    : null,
-                subscriptionEndDate: record.servicePlan.subscriptionEndDate !== null
-                    ? new Date(record.servicePlan.subscriptionEndDate)
-                    : null,
-                overageLineDeactivatedDate: record.servicePlan.overageLineDeactivatedDate !== null
-                    ? new Date(record.servicePlan.overageLineDeactivatedDate)
-                    : null
-            },
             billingCycles: record.billingCycles?.map(cycle => {
                 return {
                     ...cycle,
-                    startDate: new Date(cycle.startDate),
-                    endDate: new Date(cycle.endDate),
                     dailyDataUsages: cycle.dailyDataUsages?.map(usage => {
                         return {
                             ...usage,
                             date: new Date(usage.date)
                         };
-                    }) || null
+                    }) || null,
+                    endDate: new Date(cycle.endDate),
+                    startDate: new Date(cycle.startDate)
                 };
-            }) || null
+            }) || null,
+            endDate: new Date(record.endDate),
+            lastUpdated: record.lastUpdated !== null ? new Date(record.lastUpdated) : null,
+            servicePlan: {
+                ...record.servicePlan,
+                activeFrom: record.servicePlan.activeFrom !== null ? new Date(record.servicePlan.activeFrom) : null,
+                overageLineDeactivatedDate: record.servicePlan.overageLineDeactivatedDate !== null
+                    ? new Date(record.servicePlan.overageLineDeactivatedDate)
+                    : null,
+                subscriptionActiveFrom: record.servicePlan.subscriptionActiveFrom !== null
+                    ? new Date(record.servicePlan.subscriptionActiveFrom)
+                    : null,
+                subscriptionEndDate: record.servicePlan.subscriptionEndDate !== null
+                    ? new Date(record.servicePlan.subscriptionEndDate)
+                    : null
+            },
+            startDate: new Date(record.startDate)
         };
     }
 
@@ -183,23 +190,24 @@ export default class ServiceLine extends BaseAPI {
      * Does not include the incomplete period corresponding to the service line's current product
      */
     public async fetch_partial_periods (): Promise<{
+        periodEnd: Date;
+        periodStart: Date;
         productReferenceId: string;
-        periodStart: Date,
-        periodEnd: Date
     }[]> {
         const response = await this.get<Starlink.Common.Content<{
-            productReferenceId: string,
-            periodStart: string,
-            periodEnd: string
+            periodEnd: string;
+            periodStart: string;
+            productReferenceId: string;
         }[]>>(
-            `/enterprise/v1/account/${this.accountNumber}/` +
-            `service-lines/${this.serviceLineNumber}/billing-cycle/partial-periods`);
+            `/enterprise/v1/account/${this.accountNumber}/`
+            + `service-lines/${this.serviceLineNumber}/billing-cycle/partial-periods`
+        );
 
         return response.content.map(record => {
             return {
                 ...record,
-                periodStart: new Date(record.periodStart),
-                periodEnd: new Date(record.periodEnd)
+                periodEnd: new Date(record.periodEnd),
+                periodStart: new Date(record.periodStart)
             };
         });
     }
@@ -209,7 +217,8 @@ export default class ServiceLine extends BaseAPI {
      */
     public async opt_in (): Promise<Starlink.Management.Response.OptInProduct> {
         const response = await this.post<Starlink.Common.Content<Starlink.Management.APIResponse.OptInProduct>>(
-            `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/opt-in`);
+            `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/opt-in`
+        );
 
         const record = response.content;
 
@@ -225,7 +234,8 @@ export default class ServiceLine extends BaseAPI {
      */
     public async opt_out (): Promise<Starlink.Management.Response.OptInProduct> {
         const response = await this.delete<Starlink.Common.Content<Starlink.Management.APIResponse.OptInProduct>>(
-            `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/opt-in`);
+            `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/opt-in`
+        );
 
         const record = response.content;
 
@@ -270,9 +280,9 @@ export default class ServiceLine extends BaseAPI {
         if (this.nickname_updated) {
             try {
                 response = await this.put<Starlink.Common.Content<Starlink.Management.APIResponse.ServiceLine>>(
-                    `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/nickname`, {
-                        nickname: this.nickname
-                    });
+                    `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/nickname`,
+                    { nickname: this.nickname }
+                );
 
                 this.nickname_updated = false;
             } catch {
@@ -283,8 +293,9 @@ export default class ServiceLine extends BaseAPI {
         if (this.product_updated) {
             try {
                 response = await this.put<Starlink.Common.Content<Starlink.Management.APIResponse.ServiceLine>>(
-                    // eslint-disable-next-line max-len
-                    `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/product/${this.productReferenceId}`);
+                    // eslint-disable-next-line @stylistic/max-len
+                    `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/product/${this.productReferenceId}`
+                );
 
                 this.product_updated = false;
             } catch {
@@ -295,9 +306,9 @@ export default class ServiceLine extends BaseAPI {
         if (this.public_ip_updated) {
             try {
                 response = await this.put<Starlink.Common.Content<Starlink.Management.APIResponse.ServiceLine>>(
-                    `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/public-ip`, {
-                        publicIp: this.publicIp
-                    });
+                    `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/public-ip`,
+                    { publicIp: this.publicIp }
+                );
 
                 this.public_ip_updated = false;
             } catch {
@@ -311,8 +322,8 @@ export default class ServiceLine extends BaseAPI {
             this.serviceLine = {
                 ...response.content,
                 accountNumber: this.accountNumber,
-                startDate: record.startDate !== null ? new Date(record.startDate) : null,
-                endDate: record.endDate !== null ? new Date(record.endDate) : null
+                endDate: record.endDate !== null ? new Date(record.endDate) : null,
+                startDate: record.startDate !== null ? new Date(record.startDate) : null
             };
 
             return true;

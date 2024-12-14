@@ -21,14 +21,6 @@
 import BaseAPI, { Starlink } from '../api/base_api';
 
 export default class Router extends BaseAPI {
-    constructor (
-        client_id: string,
-        client_secret: string,
-        private router: Starlink.Management.Response.Router
-    ) {
-        super(client_id, client_secret);
-    }
-
     public get accountNumber (): string {
         return this.router.accountNumber;
     }
@@ -53,6 +45,17 @@ export default class Router extends BaseAPI {
         return this.router.userTerminalId;
     }
 
+    constructor (
+        client_id: string,
+        client_secret: string,
+        private router: Starlink.Management.Response.Router
+    ) {
+        super(
+            client_id,
+            client_secret
+        );
+    }
+
     /**
      * Assign a configuration to the router
      *
@@ -62,7 +65,8 @@ export default class Router extends BaseAPI {
         try {
             await this.put(
                 `/enterprise/v1/account/${this.accountNumber}/routers/${this.routerId}/config`,
-                configId);
+                configId
+            );
 
             this.router.configId = configId;
 
@@ -78,7 +82,8 @@ export default class Router extends BaseAPI {
     public async remove_config (): Promise<boolean> {
         try {
             await this.delete(
-                `/enterprise/v1/account/${this.accountNumber}/routers/${this.routerId}/config`);
+                `/enterprise/v1/account/${this.accountNumber}/routers/${this.routerId}/config`
+            );
 
             return true;
         } catch {

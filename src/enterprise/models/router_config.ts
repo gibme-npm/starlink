@@ -21,14 +21,6 @@
 import BaseAPI, { Starlink } from '../api/base_api';
 
 export default class RouterConfig extends BaseAPI {
-    constructor (
-        client_id: string,
-        client_secret: string,
-        private routerConfig: Starlink.Management.Response.RouterConfig
-    ) {
-        super(client_id, client_secret);
-    }
-
     public get accountNumber (): string {
         return this.routerConfig.accountNumber;
     }
@@ -53,6 +45,17 @@ export default class RouterConfig extends BaseAPI {
         this.routerConfig.nickname = value;
     }
 
+    constructor (
+        client_id: string,
+        client_secret: string,
+        private routerConfig: Starlink.Management.Response.RouterConfig
+    ) {
+        super(
+            client_id,
+            client_secret
+        );
+    }
+
     /**
      * Update the router configuration
      *
@@ -62,10 +65,12 @@ export default class RouterConfig extends BaseAPI {
     public async save (): Promise<boolean> {
         try {
             const response = await this.put<Starlink.Common.Content<Starlink.Management.APIResponse.RouterConfig>>(
-                `/enterprise/v1/account/${this.accountNumber}/routers/configs/${this.configId}`, {
+                `/enterprise/v1/account/${this.accountNumber}/routers/configs/${this.configId}`,
+                {
                     nickname: this.nickname,
                     routerConfigJson: JSON.stringify(this.config)
-                });
+                }
+            );
 
             const {
                 routerConfigJson,

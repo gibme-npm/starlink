@@ -18,13 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import { StarlinkAPI, Account, ServiceLine, Dishy, WiFiRouter } from '../src';
-import { config } from 'dotenv';
-import { describe, it } from 'mocha';
 import assert from 'assert';
+import { config } from 'dotenv';
+import {
+    describe,
+    it
+} from 'mocha';
+
+import {
+    Account,
+    Dishy,
+    ServiceLine,
+    StarlinkAPI,
+    WiFiRouter
+} from '../src';
 
 config();
 
+/* eslint-disable @stylistic/function-call-argument-newline */
 describe('Unit Tests', async () => {
     describe('Dishy API', async () => {
         const dishy = new Dishy(undefined, undefined, 5000);
@@ -119,7 +130,8 @@ describe('Unit Tests', async () => {
     describe('Enterprise API', async () => {
         const api = new StarlinkAPI(
             process.env.CLIENT_ID || '',
-            process.env.CLIENT_SECRET || '');
+            process.env.CLIENT_SECRET || ''
+        );
 
         it('Fetch Accounts', async function () {
             await api.fetch_accounts()
@@ -395,3 +407,4 @@ describe('Unit Tests', async () => {
         });
     });
 });
+/* eslint-enable @stylistic/function-call-argument-newline */

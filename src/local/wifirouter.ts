@@ -28,7 +28,11 @@ export default class WiFiRouter extends GRPCApi {
         port = 9000,
         timeout?: number
     ) {
-        super(host, port, timeout);
+        super(
+            host,
+            port,
+            timeout
+        );
     }
 
     /**
