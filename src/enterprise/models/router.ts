@@ -21,30 +21,6 @@
 import BaseAPI, { Starlink } from '../api/base_api';
 
 export default class Router extends BaseAPI {
-    public get accountNumber (): string {
-        return this.router.accountNumber;
-    }
-
-    public get configId (): string {
-        return this.router.configId;
-    }
-
-    public get directLinkToDish (): boolean {
-        return this.router.directLinkToDish;
-    }
-
-    public get hardwareVersion (): string {
-        return this.router.hardwareVersion;
-    }
-
-    public get routerId (): string {
-        return this.router.routerId;
-    }
-
-    public get userTerminalId (): string {
-        return this.router.userTerminalId;
-    }
-
     constructor (
         client_id: string,
         client_secret: string,
@@ -96,6 +72,30 @@ export default class Router extends BaseAPI {
      */
     public toString (): string {
         return JSON.stringify(this.router);
+    }
+
+    public get accountNumber (): string {
+        return this.router.accountNumber;
+    }
+
+    public get configId (): string {
+        return this.router.configId;
+    }
+
+    public get directLinkToDish (): boolean {
+        return this.router.directLinkToDish;
+    }
+
+    public get hardwareVersion (): string {
+        return this.router.hardwareVersion;
+    }
+
+    public get routerId (): string {
+        return this.router.routerId;
+    }
+
+    public get userTerminalId (): string {
+        return this.router.userTerminalId;
     }
 }
 

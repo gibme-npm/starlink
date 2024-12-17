@@ -23,74 +23,6 @@ import BaseAPI, { Starlink } from '../api/base_api';
 import type { UserTerminal } from './user_terminal';
 
 export default class ServiceLine extends BaseAPI {
-    public get accountNumber (): string {
-        return this.serviceLine.accountNumber;
-    }
-
-    public get active (): boolean {
-        return this.serviceLine.active;
-    }
-
-    public get addressReferenceId (): string {
-        return this.serviceLine.addressReferenceId;
-    }
-
-    public get delayedProductId (): string | null {
-        return this.serviceLine.delayedProductId;
-    }
-
-    public get endDate (): Date | null {
-        return this.serviceLine.endDate;
-    }
-
-    public get nickname (): string | null {
-        return this.serviceLine.nickname;
-    }
-
-    public set nickname (value: string) {
-        if (value !== this.nickname) {
-            this.nickname_updated = true;
-        }
-
-        this.serviceLine.nickname = value;
-    }
-
-    public get optInProductId (): string | null {
-        return this.serviceLine.optInProductId;
-    }
-
-    public get productReferenceId (): string {
-        return this.serviceLine.productReferenceId;
-    }
-
-    public set productReferenceId (value: string) {
-        if (value !== this.productReferenceId) {
-            this.product_updated = true;
-        }
-
-        this.serviceLine.productReferenceId = value;
-    }
-
-    public get publicIp (): boolean {
-        return this.serviceLine.publicIp;
-    }
-
-    public set publicIp (value: boolean) {
-        if (value !== this.publicIp) {
-            this.public_ip_updated = true;
-        }
-
-        this.serviceLine.publicIp = value;
-    }
-
-    public get serviceLineNumber (): string {
-        return this.serviceLine.serviceLineNumber;
-    }
-
-    public get startDate (): Date | null {
-        return this.serviceLine.startDate;
-    }
-
     private nickname_updated = false;
 
     private product_updated = false;
@@ -114,7 +46,7 @@ export default class ServiceLine extends BaseAPI {
      * @param terminalOrId
      */
     public async add_terminal (
-        terminalOrId: UserTerminal | string
+        terminalOrId: string | UserTerminal
     ): Promise<boolean> {
         try {
             let url = `/enterprise/v1/account/${this.accountNumber}/user-terminals/`;
@@ -252,7 +184,7 @@ export default class ServiceLine extends BaseAPI {
      * @param terminalOrId
      */
     public async remove_terminal (
-        terminalOrId: UserTerminal | string
+        terminalOrId: string | UserTerminal
     ): Promise<boolean> {
         try {
             let url = `/enterprise/v1/account/${this.accountNumber}/user-terminals/`;
@@ -337,6 +269,74 @@ export default class ServiceLine extends BaseAPI {
      */
     public toString (): string {
         return JSON.stringify(this.serviceLine);
+    }
+
+    public get accountNumber (): string {
+        return this.serviceLine.accountNumber;
+    }
+
+    public get active (): boolean {
+        return this.serviceLine.active;
+    }
+
+    public get addressReferenceId (): string {
+        return this.serviceLine.addressReferenceId;
+    }
+
+    public get delayedProductId (): string | null {
+        return this.serviceLine.delayedProductId;
+    }
+
+    public get endDate (): Date | null {
+        return this.serviceLine.endDate;
+    }
+
+    public get nickname (): string | null {
+        return this.serviceLine.nickname;
+    }
+
+    public set nickname (value: string) {
+        if (value !== this.nickname) {
+            this.nickname_updated = true;
+        }
+
+        this.serviceLine.nickname = value;
+    }
+
+    public get optInProductId (): string | null {
+        return this.serviceLine.optInProductId;
+    }
+
+    public get productReferenceId (): string {
+        return this.serviceLine.productReferenceId;
+    }
+
+    public set productReferenceId (value: string) {
+        if (value !== this.productReferenceId) {
+            this.product_updated = true;
+        }
+
+        this.serviceLine.productReferenceId = value;
+    }
+
+    public get publicIp (): boolean {
+        return this.serviceLine.publicIp;
+    }
+
+    public set publicIp (value: boolean) {
+        if (value !== this.publicIp) {
+            this.public_ip_updated = true;
+        }
+
+        this.serviceLine.publicIp = value;
+    }
+
+    public get serviceLineNumber (): string {
+        return this.serviceLine.serviceLineNumber;
+    }
+
+    public get startDate (): Date | null {
+        return this.serviceLine.startDate;
     }
 }
 

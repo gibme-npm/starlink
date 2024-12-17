@@ -6,7 +6,7 @@ extends:
   - standard
   - plugin:@typescript-eslint/eslint-recommended
   - plugin:@typescript-eslint/recommended
-  - plugin:perfectionist/recommended-natural-legacy
+  - plugin:perfectionist/recommended-natural
 parser: '@typescript-eslint/parser'
 parserOptions:
   ecmaVersion: 11
@@ -32,18 +32,14 @@ rules: {
   '@stylistic/indent': [ 'error', 4, {
     SwitchCase: 1
   } ],
-  '@stylistic/linebreak-style': [ 'error', 'unix' ],
+  '@stylistic/linebreak-style': [ 'off', 'unix' ],
   '@stylistic/max-len': [ 'error', {
     code: 120
   } ],
   '@stylistic/newline-per-chained-call': [ 'error', {
     ignoreChainWithDepth: 1
   } ],
-  '@stylistic/operator-linebreak': [ 'error', 'before' ],
-  '@stylistic/quotes': [ 'error', 'single' ],
-  '@stylistic/semi': [ 'error', 'always' ],
-  '@stylistic/ts/member-delimiter-style': 'error',
-  '@stylistic/ts/object-curly-newline': [ 'error', {
+  '@stylistic/object-curly-newline': [ 'error', {
     ExportDeclaration: {
       minProperties: 3,
       multiline: true
@@ -61,13 +57,17 @@ rules: {
       multiline: true
     }
   } ],
-  '@stylistic/ts/object-property-newline': [ 'error', {
+  '@stylistic/object-property-newline': [ 'error', {
     allowAllPropertiesOnSameLine: false
   } ],
+  '@stylistic/operator-linebreak': [ 'error', 'before' ],
+  '@stylistic/quotes': [ 'error', 'single' ],
+  '@stylistic/semi': [ 'error', 'always' ],
+  '@stylistic/ts/member-delimiter-style': 'error',
   '@stylistic/ts/padding-line-between-statements': [
     'error',
-    { blankLine: 'always', next: [ 'block', 'block-like','enum', 'interface', 'type' ], prev: '*' },
-    { blankLine: 'always', next: '*', prev: [ 'block', 'block-like','enum', 'interface', 'type' ] }
+    { blankLine: 'always', next: [ 'block', 'block-like', 'interface', 'type' ], prev: '*' },
+    { blankLine: 'always', next: '*', prev: [ 'block', 'block-like', 'interface', 'type' ] }
   ],
   '@typescript-eslint/consistent-generic-constructors': [ 'error', 'constructor' ],
   '@typescript-eslint/consistent-indexed-object-style': [ 'error', 'record' ],
@@ -85,8 +85,23 @@ rules: {
   } ],
   indent: off,
   operator-linebreak: off,
-  perfectionist/sort-exports: [ 'error', {
-    groupKind: 'values-first'
+  perfectionist/sort-classes: [ 'error', {
+    groups: [
+      'index-signature',
+      'static-property',
+      'static-block',
+      [ 'protected-property', 'protected-accessor-property' ],
+      [ 'private-property', 'private-accessor-property' ],
+      [ 'property', 'accessor-property' ],
+      'constructor',
+      'static-method',
+      'protected-method',
+      'private-method',
+      'method',
+      [ 'get-method', 'set-method' ],
+      'unknown',
+    ],
+    ignore-case: true
   } ],
   perfectionist/sort-imports: [ 'error', {
     groups: [
@@ -98,7 +113,8 @@ rules: {
       [ 'parent-type', 'sibling-type', 'index-type' ],
       'object',
       'unknown'
-    ]
+    ],
+    ignore-case: true
   } ],
   perfectionist/sort-interfaces: [ 'error', {
     groups: [
@@ -126,14 +142,15 @@ rules: {
       ],
       [ 'index-signature', 'optional-index-signature' ]
     ],
-    newlinesBetween: 'always',
+    ignore-case: true,
     type: 'natural'
   } ],
-  perfectionist/sort-modules: [ 'error', {
-    newlinesBetween: 'ignore'
+  perfectionist/sort-named-exports: [ 'error', {
+    ignore-case: true
   } ],
-  perfectionist/sort-named-exports: 'error',
-  perfectionist/sort-named-imports: 'error',
+  perfectionist/sort-named-imports: [ 'error', {
+    ignore-case: true
+  } ],
   perfectionist/sort-object-types: [ 'error', {
     groups: [
       [
@@ -160,24 +177,12 @@ rules: {
       ],
       [ 'index-signature', 'optional-index-signature' ]
     ],
-    newlinesBetween: 'always',
+    ignore-case: true,
     type: 'natural'
   } ],
   perfectionist/sort-union-types: [ 'error', {
-    groups: [
-      'conditional',
-      'function',
-      'import',
-      'named',
-      'keyword',
-      'tuple',
-      'operator',
-      'object',
-      'literal',
-      'intersection',
-      'union',
-      'nullish',
-    ],
+    ignore-case: true,
+    nullable-last: true,
     type: 'natural'
   } ],
   semi: off,

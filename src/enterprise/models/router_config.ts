@@ -21,30 +21,6 @@
 import BaseAPI, { Starlink } from '../api/base_api';
 
 export default class RouterConfig extends BaseAPI {
-    public get accountNumber (): string {
-        return this.routerConfig.accountNumber;
-    }
-
-    public get config (): any {
-        return this.routerConfig.routerConfig;
-    }
-
-    public set config (value: any) {
-        this.routerConfig.routerConfig = value;
-    }
-
-    public get configId (): string {
-        return this.routerConfig.configId;
-    }
-
-    public get nickname (): string {
-        return this.routerConfig.nickname;
-    }
-
-    public set nickname (value: string) {
-        this.routerConfig.nickname = value;
-    }
-
     constructor (
         client_id: string,
         client_secret: string,
@@ -94,6 +70,30 @@ export default class RouterConfig extends BaseAPI {
      */
     public toString (): string {
         return JSON.stringify(this.routerConfig);
+    }
+
+    public get accountNumber (): string {
+        return this.routerConfig.accountNumber;
+    }
+
+    public get config (): any {
+        return this.routerConfig.routerConfig;
+    }
+
+    public set config (value: any) {
+        this.routerConfig.routerConfig = value;
+    }
+
+    public get configId (): string {
+        return this.routerConfig.configId;
+    }
+
+    public get nickname (): string {
+        return this.routerConfig.nickname;
+    }
+
+    public set nickname (value: string) {
+        this.routerConfig.nickname = value;
     }
 }
 

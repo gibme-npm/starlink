@@ -24,38 +24,6 @@ import Router from './router';
 import type { ServiceLine } from './service_line';
 
 export default class UserTerminal extends BaseAPI {
-    public get accountNumber (): string {
-        return this.userTerminal.accountNumber;
-    }
-
-    public get active (): boolean {
-        return this.userTerminal.active;
-    }
-
-    public get dishSerialNumber (): string {
-        return this.userTerminal.dishSerialNumber;
-    }
-
-    public get kitSerialNumber (): string {
-        return this.userTerminal.kitSerialNumber;
-    }
-
-    public get routers (): Router[] {
-        return this.userTerminal.routers.map(router => new Router(
-            this.client_id,
-            this.client_secret,
-            router
-        ));
-    }
-
-    public get serviceLineNumber (): string | null {
-        return this.userTerminal.serviceLineNumber;
-    }
-
-    public get userTerminalId (): string {
-        return this.userTerminal.userTerminalId;
-    }
-
     constructor (
         client_id: string,
         client_secret: string,
@@ -119,6 +87,38 @@ export default class UserTerminal extends BaseAPI {
      */
     public toString (): string {
         return JSON.stringify(this.userTerminal);
+    }
+
+    public get accountNumber (): string {
+        return this.userTerminal.accountNumber;
+    }
+
+    public get active (): boolean {
+        return this.userTerminal.active;
+    }
+
+    public get dishSerialNumber (): string {
+        return this.userTerminal.dishSerialNumber;
+    }
+
+    public get kitSerialNumber (): string {
+        return this.userTerminal.kitSerialNumber;
+    }
+
+    public get routers (): Router[] {
+        return this.userTerminal.routers.map(router => new Router(
+            this.client_id,
+            this.client_secret,
+            router
+        ));
+    }
+
+    public get serviceLineNumber (): string | null {
+        return this.userTerminal.serviceLineNumber;
+    }
+
+    public get userTerminalId (): string {
+        return this.userTerminal.userTerminalId;
     }
 }
 

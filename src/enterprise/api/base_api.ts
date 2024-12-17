@@ -59,84 +59,6 @@ export default abstract class BaseAPI {
         protected readonly client_secret: string
     ) {}
 
-    private static async requestCount (): Promise<number> {
-        return (await BaseAPI.cache.keys()).length;
-    }
-
-    /**
-     * Performs an HTTP delete request against the Starlink Enterprise API
-     *
-     * @param endpoint
-     * @param params
-     * @protected
-     */
-    protected async delete<Type extends Starlink.Response = any> (
-        endpoint: string,
-        params: Record<string, any> = {}
-    ): Promise<Type> {
-        return this.execute(
-            HTTP_METHOD.DELETE,
-            endpoint,
-            params
-        );
-    }
-
-    /**
-     * Performs an HTTP get request against the Starlink Enterprise API
-     *
-     * @param endpoint
-     * @param params
-     * @protected
-     */
-    protected async get<Type extends Starlink.Response = any> (
-        endpoint: string,
-        params: Record<string, any> = {}
-    ): Promise<Type> {
-        return this.execute(
-            HTTP_METHOD.GET,
-            endpoint,
-            params
-        );
-    }
-
-    /**
-     * Performs an HTTP post request against the Starlink Enterprise API
-     *
-     * @param endpoint
-     * @param payload
-     * @protected
-     */
-    protected async post<Type extends Starlink.Response = any> (
-        endpoint: string,
-        payload?: object
-    ): Promise<Type> {
-        return this.execute(
-            HTTP_METHOD.POST,
-            endpoint,
-            {},
-            payload
-        );
-    }
-
-    /**
-     * Performs an HTTP put request against the Starlink Enterprise API
-     *
-     * @param endpoint
-     * @param payload
-     * @protected
-     */
-    protected async put<Type extends Starlink.Response = any> (
-        endpoint: string,
-        payload?: object | string
-    ): Promise<Type> {
-        return this.execute(
-            HTTP_METHOD.PUT,
-            endpoint,
-            {},
-            payload
-        );
-    }
-
     /**
      * Attempts to authenticate with the Starlink Enterprise API
      * If it succeeds, the token is stored internally for later use
@@ -265,5 +187,83 @@ export default abstract class BaseAPI {
         }
 
         return await response.json();
+    }
+
+    private static async requestCount (): Promise<number> {
+        return (await BaseAPI.cache.keys()).length;
+    }
+
+    /**
+     * Performs an HTTP delete request against the Starlink Enterprise API
+     *
+     * @param endpoint
+     * @param params
+     * @protected
+     */
+    protected async delete<Type extends Starlink.Response = any> (
+        endpoint: string,
+        params: Record<string, any> = {}
+    ): Promise<Type> {
+        return this.execute(
+            HTTP_METHOD.DELETE,
+            endpoint,
+            params
+        );
+    }
+
+    /**
+     * Performs an HTTP get request against the Starlink Enterprise API
+     *
+     * @param endpoint
+     * @param params
+     * @protected
+     */
+    protected async get<Type extends Starlink.Response = any> (
+        endpoint: string,
+        params: Record<string, any> = {}
+    ): Promise<Type> {
+        return this.execute(
+            HTTP_METHOD.GET,
+            endpoint,
+            params
+        );
+    }
+
+    /**
+     * Performs an HTTP post request against the Starlink Enterprise API
+     *
+     * @param endpoint
+     * @param payload
+     * @protected
+     */
+    protected async post<Type extends Starlink.Response = any> (
+        endpoint: string,
+        payload?: object
+    ): Promise<Type> {
+        return this.execute(
+            HTTP_METHOD.POST,
+            endpoint,
+            {},
+            payload
+        );
+    }
+
+    /**
+     * Performs an HTTP put request against the Starlink Enterprise API
+     *
+     * @param endpoint
+     * @param payload
+     * @protected
+     */
+    protected async put<Type extends Starlink.Response = any> (
+        endpoint: string,
+        payload?: object | string
+    ): Promise<Type> {
+        return this.execute(
+            HTTP_METHOD.PUT,
+            endpoint,
+            {},
+            payload
+        );
     }
 }

@@ -24,34 +24,6 @@ import RouterConfig from './router_config';
 import ServiceLine from './service_line';
 
 export default class Account extends BaseAPI {
-    /**
-     * The name of the account
-     */
-    public get accountName (): string | undefined {
-        return this.account.accountName || undefined;
-    }
-
-    /**
-     * The Account Number. Example: ACC-511274-31364-54
-     */
-    public get accountNumber (): string {
-        return this.account.accountNumber;
-    }
-
-    /**
-     * Default router config on the account
-     */
-    public get defaultRouterConfigId (): string | undefined {
-        return this.account.defaultRouterConfigId || undefined;
-    }
-
-    /**
-     * The region code of the account. Example: US
-     */
-    public get regionCode (): string {
-        return this.account.regionCode;
-    }
-
     constructor (
         client_id: string,
         client_secret: string,
@@ -61,6 +33,76 @@ export default class Account extends BaseAPI {
             client_id,
             client_secret
         );
+    }
+
+    /**
+     * Transforms the API response for a Realtime Data Tracking request into an actual response
+     *
+     * @param record
+     * @private
+     */
+    private transformRealtimeDataTracking (
+        record: Starlink.Management.APIResponse.RealtimeDataTracking
+    ): Starlink.Management.Response.RealtimeDataTracking {
+        return {
+            ...record,
+            ...record,
+            billingCycles: record.billingCycles !== null
+                ? record.billingCycles.map(cycle => {
+                    return {
+                        ...cycle,
+                        dailyDataUsage: cycle.dailyDataUsage !== null
+                            ? cycle.dailyDataUsage.map(usage => {
+                                return {
+                                    ...usage,
+                                    date: new Date(usage.date)
+                                };
+                            })
+                            : null,
+                        endDate: new Date(cycle.endDate),
+                        startDate: new Date(cycle.startDate)
+                    };
+                })
+                : null,
+            endDate: new Date(record.endDate),
+            lastUpdated: record.lastUpdated !== null ? new Date(record.lastUpdated) : null,
+            servicePlan: {
+                ...record.servicePlan,
+                activeFrom: record.servicePlan.activeFrom !== null
+                    ? new Date(record.servicePlan.activeFrom)
+                    : null,
+                overageLineDeactivatedDate: record.servicePlan.overageLineDeactivatedDate !== null
+                    ? new Date(record.servicePlan.overageLineDeactivatedDate)
+                    : null,
+                subscriptionActiveFrom: record.servicePlan.subscriptionActiveFrom !== null
+                    ? new Date(record.servicePlan.subscriptionActiveFrom)
+                    : null,
+                subscriptionEndDate: record.servicePlan.subscriptionEndDate !== null
+                    ? new Date(record.servicePlan.subscriptionEndDate)
+                    : null
+            },
+            startDate: new Date(record.startDate)
+        };
+    }
+
+    /**
+     * Transforms the API response for a Subscription request into an actual response
+     *
+     * @param record
+     * @private
+     */
+    private transformSubscription (
+        record: Starlink.Management.APIResponse.Subscription
+    ): Starlink.Management.Response.Subscription {
+        return {
+            ...record,
+            endDate: record.endDate !== null ? new Date(record.endDate) : null,
+            normalizedStartDate: record.normalizedStartDate !== null
+                ? new Date(record.normalizedStartDate)
+                : null,
+            serviceEndDate: record.serviceEndDate !== null ? new Date(record.serviceEndDate) : null,
+            startDate: record.startDate !== null ? new Date(record.startDate) : null
+        };
     }
 
     /**
@@ -1041,73 +1083,31 @@ export default class Account extends BaseAPI {
     }
 
     /**
-     * Transforms the API response for a Realtime Data Tracking request into an actual response
-     *
-     * @param record
-     * @private
+     * The name of the account
      */
-    private transformRealtimeDataTracking (
-        record: Starlink.Management.APIResponse.RealtimeDataTracking
-    ): Starlink.Management.Response.RealtimeDataTracking {
-        return {
-            ...record,
-            ...record,
-            billingCycles: record.billingCycles !== null
-                ? record.billingCycles.map(cycle => {
-                    return {
-                        ...cycle,
-                        dailyDataUsage: cycle.dailyDataUsage !== null
-                            ? cycle.dailyDataUsage.map(usage => {
-                                return {
-                                    ...usage,
-                                    date: new Date(usage.date)
-                                };
-                            })
-                            : null,
-                        endDate: new Date(cycle.endDate),
-                        startDate: new Date(cycle.startDate)
-                    };
-                })
-                : null,
-            endDate: new Date(record.endDate),
-            lastUpdated: record.lastUpdated !== null ? new Date(record.lastUpdated) : null,
-            servicePlan: {
-                ...record.servicePlan,
-                activeFrom: record.servicePlan.activeFrom !== null
-                    ? new Date(record.servicePlan.activeFrom)
-                    : null,
-                overageLineDeactivatedDate: record.servicePlan.overageLineDeactivatedDate !== null
-                    ? new Date(record.servicePlan.overageLineDeactivatedDate)
-                    : null,
-                subscriptionActiveFrom: record.servicePlan.subscriptionActiveFrom !== null
-                    ? new Date(record.servicePlan.subscriptionActiveFrom)
-                    : null,
-                subscriptionEndDate: record.servicePlan.subscriptionEndDate !== null
-                    ? new Date(record.servicePlan.subscriptionEndDate)
-                    : null
-            },
-            startDate: new Date(record.startDate)
-        };
+    public get accountName (): string | undefined {
+        return this.account.accountName || undefined;
     }
 
     /**
-     * Transforms the API response for a Subscription request into an actual response
-     *
-     * @param record
-     * @private
+     * The Account Number. Example: ACC-511274-31364-54
      */
-    private transformSubscription (
-        record: Starlink.Management.APIResponse.Subscription
-    ): Starlink.Management.Response.Subscription {
-        return {
-            ...record,
-            endDate: record.endDate !== null ? new Date(record.endDate) : null,
-            normalizedStartDate: record.normalizedStartDate !== null
-                ? new Date(record.normalizedStartDate)
-                : null,
-            serviceEndDate: record.serviceEndDate !== null ? new Date(record.serviceEndDate) : null,
-            startDate: record.startDate !== null ? new Date(record.startDate) : null
-        };
+    public get accountNumber (): string {
+        return this.account.accountNumber;
+    }
+
+    /**
+     * Default router config on the account
+     */
+    public get defaultRouterConfigId (): string | undefined {
+        return this.account.defaultRouterConfigId || undefined;
+    }
+
+    /**
+     * The region code of the account. Example: US
+     */
+    public get regionCode (): string {
+        return this.account.regionCode;
     }
 }
 
