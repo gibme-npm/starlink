@@ -180,6 +180,9 @@ rules: {
     ignore-case: true,
     type: 'natural'
   } ],
+  perfectionist/sort-objects: [ 'error', {
+    ignore-case: true
+  } ],
   perfectionist/sort-union-types: [ 'error', {
     ignore-case: true,
     nullable-last: true,
