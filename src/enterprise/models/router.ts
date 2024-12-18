@@ -26,7 +26,52 @@ export default class Router extends BaseAPI {
         client_secret: string,
         private router: Starlink.Management.Response.Router
     ) {
-        super(client_id, client_secret);
+        super(
+            client_id,
+            client_secret
+        );
+    }
+
+    /**
+     * Assign a configuration to the router
+     *
+     * @param configId
+     */
+    public async assign_config (configId: string): Promise<boolean> {
+        try {
+            await this.put(
+                `/enterprise/v1/account/${this.accountNumber}/routers/${this.routerId}/config`,
+                configId
+            );
+
+            this.router.configId = configId;
+
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Remove the configuration assignment of the router
+     */
+    public async remove_config (): Promise<boolean> {
+        try {
+            await this.delete(
+                `/enterprise/v1/account/${this.accountNumber}/routers/${this.routerId}/config`
+            );
+
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Converts the instance to a string (JSON encoded)
+     */
+    public toString (): string {
+        return JSON.stringify(this.router);
     }
 
     public get accountNumber (): string {
@@ -51,46 +96,6 @@ export default class Router extends BaseAPI {
 
     public get userTerminalId (): string {
         return this.router.userTerminalId;
-    }
-
-    /**
-     * Assign a configuration to the router
-     *
-     * @param configId
-     */
-    public async assign_config (configId: string): Promise<boolean> {
-        try {
-            await this.put(
-                `/enterprise/v1/account/${this.accountNumber}/routers/${this.routerId}/config`,
-                configId);
-
-            this.router.configId = configId;
-
-            return true;
-        } catch {
-            return false;
-        }
-    }
-
-    /**
-     * Remove the configuration assignment of the router
-     */
-    public async remove_config (): Promise<boolean> {
-        try {
-            await this.delete(
-                `/enterprise/v1/account/${this.accountNumber}/routers/${this.routerId}/config`);
-
-            return true;
-        } catch {
-            return false;
-        }
-    }
-
-    /**
-     * Converts the instance to a string (JSON encoded)
-     */
-    public toString (): string {
-        return JSON.stringify(this.router);
     }
 }
 

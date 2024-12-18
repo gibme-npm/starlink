@@ -18,31 +18,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import fetch, { Headers, HTTP_METHOD } from '@gibme/fetch';
 import Cache from '@gibme/cache/memory';
+import fetch, {
+    Headers,
+    HTTP_METHOD
+} from '@gibme/fetch';
+
 import { Starlink } from './types';
 export { Starlink } from './types';
 
 /** @ignore */
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise(resolve => setTimeout(
+    resolve,
+    ms
+));
 
 /**
  * Provides a base-level abstraction for interacting with the Starlink Enterprise API
  */
 export default abstract class BaseAPI {
-    private static token?: Starlink.Token;
     /**
      * We are limited to 250 requests per minute from a single IP address
      * this cache helps to track this and automatically times out old
      * requests
      */
-    private static readonly cache = new Cache({ stdTTL: 60, checkperiod: 5 });
-    private static readonly requestLimit = 250;
-    public readonly baseUrl = 'https://web-api.starlink.com';
+    private static readonly cache = new Cache({
+        checkperiod: 5,
+        stdTTL: 60
+    });
 
-    private static async requestCount (): Promise<number> {
-        return (await BaseAPI.cache.keys()).length;
-    }
+    private static readonly requestLimit = 250;
+
+    private static token?: Starlink.Token;
+
+    public readonly baseUrl = 'https://web-api.starlink.com';
 
     // eslint-disable-next-line no-useless-constructor
     constructor (
@@ -57,13 +66,16 @@ export default abstract class BaseAPI {
      * @private
      */
     private async authenticate (): Promise<boolean> {
-        const response = await fetch.post('https://api.starlink.com/auth/connect/token', {
-            formData: {
-                client_id: this.client_id,
-                client_secret: this.client_secret,
-                grant_type: 'client_credentials'
+        const response = await fetch.post(
+            'https://api.starlink.com/auth/connect/token',
+            {
+                formData: {
+                    client_id: this.client_id,
+                    client_secret: this.client_secret,
+                    grant_type: 'client_credentials'
+                }
             }
-        });
+        );
 
         if (!response.ok) return false;
 
@@ -81,20 +93,6 @@ export default abstract class BaseAPI {
     }
 
     /**
-     * Performs an HTTP delete request against the Starlink Enterprise API
-     *
-     * @param endpoint
-     * @param params
-     * @protected
-     */
-    protected async delete<Type extends Starlink.Response = any> (
-        endpoint: string,
-        params: { [key: string]: any } = {}
-    ): Promise<Type> {
-        return this.execute(HTTP_METHOD.DELETE, endpoint, params);
-    }
-
-    /**
      * Performs an HTTP request against the Starlink Enterprise API
      *
      * @param method
@@ -108,8 +106,8 @@ export default abstract class BaseAPI {
     (
         method: HTTP_METHOD,
         endpoint: string,
-        params: { [key: string]: any } = {},
-        payload?: { [key: string]: any } | string,
+        params: Record<string, any> = {},
+        payload?: Record<string, any> | string,
         is_retry = false
     ): Promise<Type> {
         // if we don't have a token, and we cannot authenticate to get one, fail
@@ -123,27 +121,49 @@ export default abstract class BaseAPI {
         }
 
         // sets a key in the cache for the request, so that it can be counted towards our rate limit
-        await BaseAPI.cache.set({ method, endpoint, params, payload, date: Date.now() }, {});
+        await BaseAPI.cache.set(
+            {
+                date: Date.now(),
+                endpoint,
+                method,
+                params,
+                payload
+            },
+            {}
+        );
 
         // construct our headers
         const headers = new Headers();
-        headers.set('accept', 'application/json');
-        headers.set('authorization', `${BaseAPI.token?.token_type} ${BaseAPI.token?.access_token}`);
+        headers.set(
+            'accept',
+            'application/json'
+        );
+        headers.set(
+            'authorization',
+            `${BaseAPI.token?.token_type} ${BaseAPI.token?.access_token}`
+        );
 
         // construct any query string parameters
         const qs = new URLSearchParams();
+
         for (const key in params) {
-            qs.set(key, params[key]);
+            qs.set(
+                key,
+                params[key]
+            );
         }
 
         // perform the fetch request
-        const response = await fetch(`${this.baseUrl}${endpoint}?${qs.toString()}`, {
-            method,
-            headers,
-            json: (method === HTTP_METHOD.PATCH || method === HTTP_METHOD.POST || method === HTTP_METHOD.PUT)
-                ? payload
-                : undefined
-        });
+        const response = await fetch(
+            `${this.baseUrl}${endpoint}?${qs.toString()}`,
+            {
+                headers,
+                json: (method === HTTP_METHOD.PATCH || method === HTTP_METHOD.POST || method === HTTP_METHOD.PUT)
+                    ? payload
+                    : undefined,
+                method
+            }
+        );
 
         if (!response.ok) {
             /**
@@ -153,7 +173,13 @@ export default abstract class BaseAPI {
              */
             if (response.status === 401 && !is_retry) {
                 if (await this.authenticate()) {
-                    return this.execute<Type>(method, endpoint, params, payload, true);
+                    return this.execute<Type>(
+                        method,
+                        endpoint,
+                        params,
+                        payload,
+                        true
+                    );
                 }
             }
 
@@ -161,6 +187,28 @@ export default abstract class BaseAPI {
         }
 
         return await response.json();
+    }
+
+    private static async requestCount (): Promise<number> {
+        return (await BaseAPI.cache.keys()).length;
+    }
+
+    /**
+     * Performs an HTTP delete request against the Starlink Enterprise API
+     *
+     * @param endpoint
+     * @param params
+     * @protected
+     */
+    protected async delete<Type extends Starlink.Response = any> (
+        endpoint: string,
+        params: Record<string, any> = {}
+    ): Promise<Type> {
+        return this.execute(
+            HTTP_METHOD.DELETE,
+            endpoint,
+            params
+        );
     }
 
     /**
@@ -172,9 +220,13 @@ export default abstract class BaseAPI {
      */
     protected async get<Type extends Starlink.Response = any> (
         endpoint: string,
-        params: { [key: string]: any } = {}
+        params: Record<string, any> = {}
     ): Promise<Type> {
-        return this.execute(HTTP_METHOD.GET, endpoint, params);
+        return this.execute(
+            HTTP_METHOD.GET,
+            endpoint,
+            params
+        );
     }
 
     /**
@@ -188,7 +240,12 @@ export default abstract class BaseAPI {
         endpoint: string,
         payload?: object
     ): Promise<Type> {
-        return this.execute(HTTP_METHOD.POST, endpoint, {}, payload);
+        return this.execute(
+            HTTP_METHOD.POST,
+            endpoint,
+            {},
+            payload
+        );
     }
 
     /**
@@ -202,6 +259,11 @@ export default abstract class BaseAPI {
         endpoint: string,
         payload?: object | string
     ): Promise<Type> {
-        return this.execute(HTTP_METHOD.PUT, endpoint, {}, payload);
+        return this.execute(
+            HTTP_METHOD.PUT,
+            endpoint,
+            {},
+            payload
+        );
     }
 }

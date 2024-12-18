@@ -28,7 +28,11 @@ export default class Dishy extends GRPCApi {
         port = 9200,
         timeout?: number
     ) {
-        super(host, port, timeout);
+        super(
+            host,
+            port,
+            timeout
+        );
     }
 
     /**

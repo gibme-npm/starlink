@@ -20,6 +20,7 @@
 
 import BaseAPI, { Starlink } from '../api/base_api';
 import Router from './router';
+
 import type { ServiceLine } from './service_line';
 
 export default class UserTerminal extends BaseAPI {
@@ -28,36 +29,10 @@ export default class UserTerminal extends BaseAPI {
         client_secret: string,
         private userTerminal: Starlink.Management.Response.UserTerminal
     ) {
-        super(client_id, client_secret);
-    }
-
-    public get accountNumber (): string {
-        return this.userTerminal.accountNumber;
-    }
-
-    public get active (): boolean {
-        return this.userTerminal.active;
-    }
-
-    public get dishSerialNumber (): string {
-        return this.userTerminal.dishSerialNumber;
-    }
-
-    public get kitSerialNumber (): string {
-        return this.userTerminal.kitSerialNumber;
-    }
-
-    public get routers (): Router[] {
-        return this.userTerminal.routers.map(router =>
-            new Router(this.client_id, this.client_secret, router));
-    }
-
-    public get serviceLineNumber (): string | null {
-        return this.userTerminal.serviceLineNumber;
-    }
-
-    public get userTerminalId (): string {
-        return this.userTerminal.userTerminalId;
+        super(
+            client_id,
+            client_secret
+        );
     }
 
     /**
@@ -95,8 +70,9 @@ export default class UserTerminal extends BaseAPI {
     public async remove_from_service_line (): Promise<boolean> {
         try {
             await this.delete(
-                `/enterprise/v1/account/${this.accountNumber}` +
-                `/user-terminals/${this.userTerminalId}/${this.serviceLineNumber}`);
+                `/enterprise/v1/account/${this.accountNumber}`
+                + `/user-terminals/${this.userTerminalId}/${this.serviceLineNumber}`
+            );
 
             this.userTerminal.serviceLineNumber = null;
 
@@ -111,6 +87,38 @@ export default class UserTerminal extends BaseAPI {
      */
     public toString (): string {
         return JSON.stringify(this.userTerminal);
+    }
+
+    public get accountNumber (): string {
+        return this.userTerminal.accountNumber;
+    }
+
+    public get active (): boolean {
+        return this.userTerminal.active;
+    }
+
+    public get dishSerialNumber (): string {
+        return this.userTerminal.dishSerialNumber;
+    }
+
+    public get kitSerialNumber (): string {
+        return this.userTerminal.kitSerialNumber;
+    }
+
+    public get routers (): Router[] {
+        return this.userTerminal.routers.map(router => new Router(
+            this.client_id,
+            this.client_secret,
+            router
+        ));
+    }
+
+    public get serviceLineNumber (): string | null {
+        return this.userTerminal.serviceLineNumber;
+    }
+
+    public get userTerminalId (): string {
+        return this.userTerminal.userTerminalId;
     }
 }
 

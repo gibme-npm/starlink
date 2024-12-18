@@ -29,35 +29,80 @@ export default class Account extends BaseAPI {
         client_secret: string,
         private account: Starlink.Management.Response.Account
     ) {
-        super(client_id, client_secret);
+        super(
+            client_id,
+            client_secret
+        );
     }
 
     /**
-     * The name of the account
+     * Transforms the API response for a Realtime Data Tracking request into an actual response
+     *
+     * @param record
+     * @private
      */
-    public get accountName (): string | undefined {
-        return this.account.accountName || undefined;
+    private transformRealtimeDataTracking (
+        record: Starlink.Management.APIResponse.RealtimeDataTracking
+    ): Starlink.Management.Response.RealtimeDataTracking {
+        return {
+            ...record,
+            ...record,
+            billingCycles: record.billingCycles !== null
+                ? record.billingCycles.map(cycle => {
+                    return {
+                        ...cycle,
+                        dailyDataUsage: cycle.dailyDataUsage !== null
+                            ? cycle.dailyDataUsage.map(usage => {
+                                return {
+                                    ...usage,
+                                    date: new Date(usage.date)
+                                };
+                            })
+                            : null,
+                        endDate: new Date(cycle.endDate),
+                        startDate: new Date(cycle.startDate)
+                    };
+                })
+                : null,
+            endDate: new Date(record.endDate),
+            lastUpdated: record.lastUpdated !== null ? new Date(record.lastUpdated) : null,
+            servicePlan: {
+                ...record.servicePlan,
+                activeFrom: record.servicePlan.activeFrom !== null
+                    ? new Date(record.servicePlan.activeFrom)
+                    : null,
+                overageLineDeactivatedDate: record.servicePlan.overageLineDeactivatedDate !== null
+                    ? new Date(record.servicePlan.overageLineDeactivatedDate)
+                    : null,
+                subscriptionActiveFrom: record.servicePlan.subscriptionActiveFrom !== null
+                    ? new Date(record.servicePlan.subscriptionActiveFrom)
+                    : null,
+                subscriptionEndDate: record.servicePlan.subscriptionEndDate !== null
+                    ? new Date(record.servicePlan.subscriptionEndDate)
+                    : null
+            },
+            startDate: new Date(record.startDate)
+        };
     }
 
     /**
-     * The Account Number. Example: ACC-511274-31364-54
+     * Transforms the API response for a Subscription request into an actual response
+     *
+     * @param record
+     * @private
      */
-    public get accountNumber (): string {
-        return this.account.accountNumber;
-    }
-
-    /**
-     * Default router config on the account
-     */
-    public get defaultRouterConfigId (): string | undefined {
-        return this.account.defaultRouterConfigId || undefined;
-    }
-
-    /**
-     * The region code of the account. Example: US
-     */
-    public get regionCode (): string {
-        return this.account.regionCode;
+    private transformSubscription (
+        record: Starlink.Management.APIResponse.Subscription
+    ): Starlink.Management.Response.Subscription {
+        return {
+            ...record,
+            endDate: record.endDate !== null ? new Date(record.endDate) : null,
+            normalizedStartDate: record.normalizedStartDate !== null
+                ? new Date(record.normalizedStartDate)
+                : null,
+            serviceEndDate: record.serviceEndDate !== null ? new Date(record.serviceEndDate) : null,
+            startDate: record.startDate !== null ? new Date(record.startDate) : null
+        };
     }
 
     /**
@@ -88,9 +133,14 @@ export default class Account extends BaseAPI {
         longitude: number
     ): Promise<number> {
         const response = await this.post<Starlink.Common.Content<{
-            availableCapacity: number
-        }>>(`/enterprise/v1/account/${this.accountNumber}/addresses/check-capacity`,
-            { latitude, longitude });
+            availableCapacity: number;
+        }>>(
+            `/enterprise/v1/account/${this.accountNumber}/addresses/check-capacity`,
+            {
+                latitude,
+                longitude
+            }
+        );
 
         return response.content.availableCapacity;
     }
@@ -105,7 +155,8 @@ export default class Account extends BaseAPI {
     ): Promise<Starlink.Management.Response.Address> {
         const response = await this.post<Starlink.Common.Content<Starlink.Management.APIResponse.Address>>(
             `/enterprise/v1/account/${this.accountNumber}/addresses`,
-            address);
+            address
+        );
 
         return response.content;
     }
@@ -125,7 +176,8 @@ export default class Account extends BaseAPI {
             {
                 nickname,
                 routerConfigJson: JSON.stringify(routerConfig)
-            });
+            }
+        );
 
         const {
             routerConfigJson,
@@ -158,16 +210,21 @@ export default class Account extends BaseAPI {
             {
                 addressReferenceId,
                 productReferenceId
-            });
+            }
+        );
 
         const record = response.content;
 
-        return new ServiceLine(this.client_id, this.client_secret, {
-            ...record,
-            accountNumber: this.accountNumber,
-            startDate: record.startDate !== null ? new Date(record.startDate) : null,
-            endDate: record.endDate !== null ? new Date(record.endDate) : null
-        });
+        return new ServiceLine(
+            this.client_id,
+            this.client_secret,
+            {
+                ...record,
+                accountNumber: this.accountNumber,
+                endDate: record.endDate !== null ? new Date(record.endDate) : null,
+                startDate: record.startDate !== null ? new Date(record.startDate) : null
+            }
+        );
     }
 
     /**
@@ -179,7 +236,8 @@ export default class Account extends BaseAPI {
         addressReferenceId: string
     ): Promise<Starlink.Management.Response.Address> {
         const response = await this.get<Starlink.Common.Content<Starlink.Management.APIResponse.Address>>(
-            `/enterprise/v1/account/${this.accountNumber}/addresses/${addressReferenceId}`);
+            `/enterprise/v1/account/${this.accountNumber}/addresses/${addressReferenceId}`
+        );
 
         return response.content;
     }
@@ -196,9 +254,12 @@ export default class Account extends BaseAPI {
              */
             addressIds: string[];
             /**
-             * Filter by metadata
+             * If set to true, fetches all pages automatically
+             * Must set to false for `limit` and `page` to be honored
+             *
+             * @default true
              */
-            metadata: string;
+            all: boolean;
             /**
              * The number of addresses to return at a time
              *
@@ -206,19 +267,20 @@ export default class Account extends BaseAPI {
              */
             limit: number;
             /**
+             * Filter by metadata
+             */
+            metadata: string;
+            /**
              * The index of the page, starting at 0
              *
              * @default 0
              */
             page: number;
-            /**
-             * If set to true, fetches all pages automatically
-             * Must set to false for `limit` and `page` to be honored
-             *
-             * @default true
-             */
-            all: boolean;
-        }> = { limit: 50, page: 0, all: true }
+        }> = {
+            all: true,
+            limit: 50,
+            page: 0
+        }
     ): Promise<Starlink.Management.Response.Address[]> {
         options.limit ??= 50;
         options.page ??= 0;
@@ -227,7 +289,9 @@ export default class Account extends BaseAPI {
 
         if (!options.all) {
             response = await this.get(
-                `/enterprise/v1/account/${this.accountNumber}/addresses`, options);
+                `/enterprise/v1/account/${this.accountNumber}/addresses`,
+                options
+            );
 
             return response.content.results;
         } else {
@@ -236,11 +300,13 @@ export default class Account extends BaseAPI {
 
             do {
                 response = await this.get(
-                    `/enterprise/v1/account/${this.accountNumber}/addresses`, {
+                    `/enterprise/v1/account/${this.accountNumber}/addresses`,
+                    {
                         ...options,
-                        page: page++,
-                        limit: 100
-                    });
+                        limit: 100,
+                        page: page++
+                    }
+                );
 
                 results.push(...response.content.results);
             } while (!response.content.isLastPage);
@@ -260,9 +326,13 @@ export default class Account extends BaseAPI {
      */
     public async fetch_realtime_data_tracking (
         options: Partial<{
-            serviceLinesFilter: string[];
-            previousBillingCycles: number;
-            queryStartDateParam: string;
+            /**
+             * If set to true, fetches all pages automatically
+             * Must set to false for `limit` and `page` to be honored
+             *
+             * @default true
+             */
+            all: boolean;
             /**
              * The number of accounts to return at a time
              *
@@ -275,20 +345,19 @@ export default class Account extends BaseAPI {
              * @default 0
              */
             page: number;
-            /**
-             * If set to true, fetches all pages automatically
-             * Must set to false for `limit` and `page` to be honored
-             *
-             * @default true
-             */
-            all: boolean;
-        }> = { limit: 500, page: 0, all: true }
+            previousBillingCycles: number;
+            queryStartDateParam: string;
+            serviceLinesFilter: string[];
+        }> = {
+            all: true,
+            limit: 500,
+            page: 0
+        }
     ): Promise<Starlink.Management.Response.RealtimeDataTracking[]> {
         options.limit ??= 500;
         options.page ??= 0;
         options.all ??= true;
-        let response:
-            Starlink.Common.PagedContent<Starlink.Management.APIResponse.RealtimeDataTracking[]>;
+        let response: Starlink.Common.PagedContent<Starlink.Management.APIResponse.RealtimeDataTracking[]>;
 
         if (!options.all) {
             response = await this.post(
@@ -297,10 +366,10 @@ export default class Account extends BaseAPI {
                     ...options,
                     pageIndex: options.page,
                     pageLimit: options.limit
-                });
+                }
+            );
 
-            return response.content.results.map(record =>
-                this.transformRealtimeDataTracking(record));
+            return response.content.results.map(record => this.transformRealtimeDataTracking(record));
         } else {
             const results: Starlink.Management.Response.RealtimeDataTracking[] = [];
             let pageIndex = 0;
@@ -312,10 +381,10 @@ export default class Account extends BaseAPI {
                         ...options,
                         pageIndex: pageIndex++,
                         pageLimit: 500
-                    });
+                    }
+                );
 
-                results.push(...response.content.results.map(record =>
-                    this.transformRealtimeDataTracking(record)));
+                results.push(...response.content.results.map(record => this.transformRealtimeDataTracking(record)));
             } while (!response.content.isLastPage);
 
             if (results.length !== response.content.totalCount) {
@@ -333,9 +402,14 @@ export default class Account extends BaseAPI {
      */
     public async fetch_router (routerId: string): Promise<Router> {
         const response = await this.get<Starlink.Common.Content<Starlink.Management.APIResponse.Router>>(
-            `/enterprise/v1/account/${this.accountNumber}/routers/${routerId}`);
+            `/enterprise/v1/account/${this.accountNumber}/routers/${routerId}`
+        );
 
-        return new Router(this.client_id, this.client_secret, response.content);
+        return new Router(
+            this.client_id,
+            this.client_secret,
+            response.content
+        );
     }
 
     /**
@@ -345,7 +419,8 @@ export default class Account extends BaseAPI {
      */
     public async fetch_router_config (configId: string): Promise<RouterConfig> {
         const response = await this.get<Starlink.Common.Content<Starlink.Management.APIResponse.RouterConfig>>(
-            `/enterprise/v1/account/${this.accountNumber}/routers/configs/${configId}`);
+            `/enterprise/v1/account/${this.accountNumber}/routers/configs/${configId}`
+        );
 
         const {
             routerConfigJson,
@@ -371,19 +446,22 @@ export default class Account extends BaseAPI {
     public async fetch_router_configs (
         options: Partial<{
             /**
-             * The index of the page, starting at 0
-             *
-             * @default 0
-             */
-            page: number;
-            /**
              * If set to true, fetches all pages automatically
              * Must set to false `page` to be honored
              *
              * @default true
              */
             all: boolean;
-        }> = { page: 0, all: true }
+            /**
+             * The index of the page, starting at 0
+             *
+             * @default 0
+             */
+            page: number;
+        }> = {
+            all: true,
+            page: 0
+        }
     ): Promise<RouterConfig[]> {
         options.page ??= 0;
         options.all ??= true;
@@ -391,7 +469,9 @@ export default class Account extends BaseAPI {
 
         if (!options.all) {
             response = await this.get(
-                `/enterprise/v1/account/${this.accountNumber}/routers/configs`, options);
+                `/enterprise/v1/account/${this.accountNumber}/routers/configs`,
+                options
+            );
 
             return response.content.results.map(record => {
                 const {
@@ -415,9 +495,9 @@ export default class Account extends BaseAPI {
 
             do {
                 response = await this.get(
-                    `/enterprise/v1/account/${this.accountNumber}/routers/configs`, {
-                        page: page++
-                    });
+                    `/enterprise/v1/account/${this.accountNumber}/routers/configs`,
+                    { page: page++ }
+                );
 
                 results.push(...response.content.results.map(record => {
                     const {
@@ -452,16 +532,21 @@ export default class Account extends BaseAPI {
      */
     public async fetch_service_line (serviceLineNumber: string): Promise<ServiceLine> {
         const response = await this.get<Starlink.Common.Content<Starlink.Management.APIResponse.ServiceLine>>(
-            `/enterprise/v1/account/${this.accountNumber}/service-lines/${serviceLineNumber}`);
+            `/enterprise/v1/account/${this.accountNumber}/service-lines/${serviceLineNumber}`
+        );
 
         const record = response.content;
 
-        return new ServiceLine(this.client_id, this.client_secret, {
-            ...record,
-            accountNumber: this.accountNumber,
-            startDate: record.startDate !== null ? new Date(record.startDate) : null,
-            endDate: record.endDate !== null ? new Date(record.endDate) : null
-        });
+        return new ServiceLine(
+            this.client_id,
+            this.client_secret,
+            {
+                ...record,
+                accountNumber: this.accountNumber,
+                endDate: record.endDate !== null ? new Date(record.endDate) : null,
+                startDate: record.startDate !== null ? new Date(record.startDate) : null
+            }
+        );
     }
 
     /**
@@ -476,13 +561,12 @@ export default class Account extends BaseAPI {
              */
             addressReferenceId: string;
             /**
-             * Filter by partial match of UT ID, serial number, or kit serial number
+             * If set to true, fetches all pages automatically
+             * Must set to false for `limit` and `page` to be honored
+             *
+             * @default true
              */
-            searchString: string;
-            /**
-             * Sort the paginated results by created date
-             */
-            orderByCreatedDateDescending: boolean
+            all: boolean;
             /**
              * The number of accounts to return at a time
              *
@@ -490,19 +574,24 @@ export default class Account extends BaseAPI {
              */
             limit: number;
             /**
+             * Sort the paginated results by created date
+             */
+            orderByCreatedDateDescending: boolean;
+            /**
              * The index of the page, starting at 0
              *
              * @default 0
              */
             page: number;
             /**
-             * If set to true, fetches all pages automatically
-             * Must set to false for `limit` and `page` to be honored
-             *
-             * @default true
+             * Filter by partial match of UT ID, serial number, or kit serial number
              */
-            all: boolean;
-        }> = { limit: 50, page: 0, all: true }
+            searchString: string;
+        }> = {
+            all: true,
+            limit: 50,
+            page: 0
+        }
     ): Promise<ServiceLine[]> {
         options.limit ??= 50;
         options.page ??= 0;
@@ -510,34 +599,45 @@ export default class Account extends BaseAPI {
         let response: Starlink.Common.PagedContent<Starlink.Management.APIResponse.ServiceLine[]>;
 
         if (!options.all) {
-            response = await this.get(`/enterprise/v1/account/${this.accountNumber}/service-lines`, options);
+            response = await this.get(
+                `/enterprise/v1/account/${this.accountNumber}/service-lines`,
+                options
+            );
 
-            return response.content.results.map(record =>
-                new ServiceLine(this.client_id, this.client_secret, {
+            return response.content.results.map(record => new ServiceLine(
+                this.client_id,
+                this.client_secret,
+                {
                     ...record,
                     accountNumber: this.accountNumber,
-                    startDate: record.startDate !== null ? new Date(record.startDate) : null,
-                    endDate: record.endDate !== null ? new Date(record.endDate) : null
-                }));
+                    endDate: record.endDate !== null ? new Date(record.endDate) : null,
+                    startDate: record.startDate !== null ? new Date(record.startDate) : null
+                }
+            ));
         } else {
             const results: ServiceLine[] = [];
             let page = 0;
 
             do {
                 response = await this.get(
-                    `/enterprise/v1/account/${this.accountNumber}/service-lines`, {
+                    `/enterprise/v1/account/${this.accountNumber}/service-lines`,
+                    {
                         ...options,
-                        page: page++,
-                        limit: 100
-                    });
+                        limit: 100,
+                        page: page++
+                    }
+                );
 
-                results.push(...response.content.results.map(record =>
-                    new ServiceLine(this.client_id, this.client_secret, {
+                results.push(...response.content.results.map(record => new ServiceLine(
+                    this.client_id,
+                    this.client_secret,
+                    {
                         ...record,
                         accountNumber: this.accountNumber,
-                        startDate: record.startDate !== null ? new Date(record.startDate) : null,
-                        endDate: record.endDate !== null ? new Date(record.endDate) : null
-                    })));
+                        endDate: record.endDate !== null ? new Date(record.endDate) : null,
+                        startDate: record.startDate !== null ? new Date(record.startDate) : null
+                    }
+                )));
             } while (!response.content.isLastPage);
 
             if (results.length !== response.content.totalCount) {
@@ -557,71 +657,10 @@ export default class Account extends BaseAPI {
         subscriptionReferenceId: string
     ): Promise<Starlink.Management.Response.Subscription> {
         const response = await this.get<Starlink.Common.Content<Starlink.Management.APIResponse.Subscription>>(
-            `/enterprise/v1/account/${this.accountNumber}/subscriptions/${subscriptionReferenceId}`);
+            `/enterprise/v1/account/${this.accountNumber}/subscriptions/${subscriptionReferenceId}`
+        );
 
         return this.transformSubscription(response.content);
-    }
-
-    /**
-     * Fetch the subscriptions for the account
-     *
-     * @param options
-     */
-    public async fetch_subscriptions (
-        options: Partial<{
-            /**
-             * The number of accounts to return at a time
-             *
-             * @default 50
-             */
-            limit: number;
-            /**
-             * The index of the page, starting at 0
-             *
-             * @default 0
-             */
-            page: number;
-            /**
-             * If set to true, fetches all pages automatically
-             * Must set to false for `limit` and `page` to be honored
-             *
-             * @default true
-             */
-            all: boolean;
-        }> = { limit: 50, page: 0, all: true }
-    ): Promise<Starlink.Management.Response.Subscription[]> {
-        options.limit ??= 50;
-        options.page ??= 0;
-        options.all ??= true;
-        let response: Starlink.Common.PagedContent<Starlink.Management.APIResponse.Subscription[]>;
-
-        if (!options.all) {
-            response = await this.get(
-                `/enterprise/v1/account/${this.accountNumber}/subscriptions`, options);
-
-            return response.content.results.map(record =>
-                this.transformSubscription(record));
-        } else {
-            const results: Starlink.Management.Response.Subscription[] = [];
-            let page = 0;
-
-            do {
-                response = await this.get(
-                    `/enterprise/v1/account/${this.accountNumber}/subscriptions`, {
-                        page: page++,
-                        limit: 50
-                    });
-
-                results.push(...response.content.results.map(record =>
-                    this.transformSubscription(record)));
-            } while (!response.content.isLastPage);
-
-            if (results.length !== response.content.totalCount) {
-                throw new Error('Could not fetch all results');
-            }
-
-            return results;
-        }
     }
 
     /**
@@ -632,26 +671,10 @@ export default class Account extends BaseAPI {
     public async fetch_subscription_products (
         options: Partial<{
             /**
-             * Optional filter to return only the products from the matching line ID
-             */
-            lineId: string;
-            /**
              * Optional filter to return only lines that are active (start date in the past,
              * end date null or in the future)
              */
             activeLines: boolean;
-            /**
-             * The number of accounts to return at a time
-             *
-             * @default 50
-             */
-            limit: number;
-            /**
-             * The index of the page, starting at 0
-             *
-             * @default 0
-             */
-            page: number;
             /**
              * If set to true, fetches all pages automatically
              * Must set to false for `limit` and `page` to be honored
@@ -659,7 +682,27 @@ export default class Account extends BaseAPI {
              * @default true
              */
             all: boolean;
-        }> = { limit: 50, page: 0, all: true }
+            /**
+             * The number of accounts to return at a time
+             *
+             * @default 50
+             */
+            limit: number;
+            /**
+             * Optional filter to return only the products from the matching line ID
+             */
+            lineId: string;
+            /**
+             * The index of the page, starting at 0
+             *
+             * @default 0
+             */
+            page: number;
+        }> = {
+            all: true,
+            limit: 50,
+            page: 0
+        }
     ): Promise<Starlink.Management.Response.SubscriptionProduct[]> {
         options.limit ??= 50;
         options.page ??= 0;
@@ -669,7 +712,8 @@ export default class Account extends BaseAPI {
         if (!options.all) {
             response = await this.get(
                 `/enterprise/v1/account/${this.accountNumber}/subscriptions/available-products`,
-                options);
+                options
+            );
 
             return response.content.results;
         } else {
@@ -681,11 +725,80 @@ export default class Account extends BaseAPI {
                     `/enterprise/v1/account/${this.accountNumber}/subscriptions/available-products`,
                     {
                         ...options,
-                        page: page++,
-                        limit: 50
-                    });
+                        limit: 50,
+                        page: page++
+                    }
+                );
 
                 results.push(...response.content.results);
+            } while (!response.content.isLastPage);
+
+            if (results.length !== response.content.totalCount) {
+                throw new Error('Could not fetch all results');
+            }
+
+            return results;
+        }
+    }
+
+    /**
+     * Fetch the subscriptions for the account
+     *
+     * @param options
+     */
+    public async fetch_subscriptions (
+        options: Partial<{
+            /**
+             * If set to true, fetches all pages automatically
+             * Must set to false for `limit` and `page` to be honored
+             *
+             * @default true
+             */
+            all: boolean;
+            /**
+             * The number of accounts to return at a time
+             *
+             * @default 50
+             */
+            limit: number;
+            /**
+             * The index of the page, starting at 0
+             *
+             * @default 0
+             */
+            page: number;
+        }> = {
+            all: true,
+            limit: 50,
+            page: 0
+        }
+    ): Promise<Starlink.Management.Response.Subscription[]> {
+        options.limit ??= 50;
+        options.page ??= 0;
+        options.all ??= true;
+        let response: Starlink.Common.PagedContent<Starlink.Management.APIResponse.Subscription[]>;
+
+        if (!options.all) {
+            response = await this.get(
+                `/enterprise/v1/account/${this.accountNumber}/subscriptions`,
+                options
+            );
+
+            return response.content.results.map(record => this.transformSubscription(record));
+        } else {
+            const results: Starlink.Management.Response.Subscription[] = [];
+            let page = 0;
+
+            do {
+                response = await this.get(
+                    `/enterprise/v1/account/${this.accountNumber}/subscriptions`,
+                    {
+                        limit: 50,
+                        page: page++
+                    }
+                );
+
+                results.push(...response.content.results.map(record => this.transformSubscription(record)));
             } while (!response.content.isLastPage);
 
             if (results.length !== response.content.totalCount) {
@@ -704,25 +817,20 @@ export default class Account extends BaseAPI {
     public async fetch_user_terminals (
         options: Partial<{
             /**
-             * Filter by a set of service line numbers
-             */
-            serviceLineNumbers: string[];
-            /**
-             * Filter by a set of user terminal IDs
-             */
-            userTerminalIds: string[];
-            /**
-             * Filter by user terminals with or without a services lines. Omitting this will return both sets
-             */
-            hasServiceLine: boolean;
-            /**
              * Only return UTs that are active on this account
              */
             active: boolean;
             /**
-             * Filter by partial match of UT ID, serial number, or kit serial number
+             * If set to true, fetches all pages automatically
+             * Must set to false for `limit` and `page` to be honored
+             *
+             * @default true
              */
-            searchString: string;
+            all: boolean;
+            /**
+             * Filter by user terminals with or without a services lines. Omitting this will return both sets
+             */
+            hasServiceLine: boolean;
             /**
              * The number of accounts to return at a time
              *
@@ -736,13 +844,22 @@ export default class Account extends BaseAPI {
              */
             page: number;
             /**
-             * If set to true, fetches all pages automatically
-             * Must set to false for `limit` and `page` to be honored
-             *
-             * @default true
+             * Filter by partial match of UT ID, serial number, or kit serial number
              */
-            all: boolean;
-        }> = { limit: 50, page: 0, all: true }
+            searchString: string;
+            /**
+             * Filter by a set of service line numbers
+             */
+            serviceLineNumbers: string[];
+            /**
+             * Filter by a set of user terminal IDs
+             */
+            userTerminalIds: string[];
+        }> = {
+            all: true,
+            limit: 50,
+            page: 0
+        }
     ): Promise<Starlink.Management.Response.UserTerminal[]> {
         options.limit ??= 50;
         options.page ??= 0;
@@ -752,7 +869,8 @@ export default class Account extends BaseAPI {
         if (!options.all) {
             response = await this.get(
                 `/enterprise/v1/account/${this.accountNumber}/user-terminals`,
-                options);
+                options
+            );
 
             return response.content.results.map(record => {
                 return {
@@ -766,11 +884,13 @@ export default class Account extends BaseAPI {
 
             do {
                 response = await this.get(
-                    `/enterprise/v1/account/${this.accountNumber}/user-terminals`, {
+                    `/enterprise/v1/account/${this.accountNumber}/user-terminals`,
+                    {
                         ...options,
-                        page: page++,
-                        limit: 100
-                    });
+                        limit: 100,
+                        page: page++
+                    }
+                );
 
                 results.push(...response.content.results.map(record => {
                     return {
@@ -798,19 +918,20 @@ export default class Account extends BaseAPI {
         serviceLineNumber: string,
         options: Partial<{
             /**
-             * Optional reason for cancelling this service line
-             */
-            reasonForCancellation: string;
-            /**
              * If service should end now, or on next bill day. Default is false
              */
             endNow: boolean;
+            /**
+             * Optional reason for cancelling this service line
+             */
+            reasonForCancellation: string;
         }> = {}
     ): Promise<boolean> {
         try {
             await this.delete(
                 `/enterprise/v1/account/${this.accountNumber}/service-lines/${serviceLineNumber}`,
-                options);
+                options
+            );
 
             return true;
         } catch {
@@ -862,7 +983,12 @@ export default class Account extends BaseAPI {
     ): Promise<Starlink.Telemetry.Response.Data> {
         const response = await this.post<Starlink.Telemetry.APIResponse.Data>(
             '/telemetry/stream/v1/telemetry',
-            { batchSize, maxLingerMs, accountNumber: this.accountNumber });
+            {
+                accountNumber: this.accountNumber,
+                batchSize,
+                maxLingerMs
+            }
+        );
 
         const results: Starlink.Telemetry.Response.Data = {
             Router: [],
@@ -915,76 +1041,6 @@ export default class Account extends BaseAPI {
     }
 
     /**
-     * Transforms the API response for a Realtime Data Tracking request into an actual response
-     *
-     * @param record
-     * @private
-     */
-    private transformRealtimeDataTracking (
-        record: Starlink.Management.APIResponse.RealtimeDataTracking
-    ): Starlink.Management.Response.RealtimeDataTracking {
-        return {
-            ...record,
-            ...record,
-            startDate: new Date(record.startDate),
-            endDate: new Date(record.endDate),
-            billingCycles: record.billingCycles !== null
-                ? record.billingCycles.map(cycle => {
-                    return {
-                        ...cycle,
-                        startDate: new Date(cycle.startDate),
-                        endDate: new Date(cycle.endDate),
-                        dailyDataUsage: cycle.dailyDataUsage !== null
-                            ? cycle.dailyDataUsage.map(usage => {
-                                return {
-                                    ...usage,
-                                    date: new Date(usage.date)
-                                };
-                            })
-                            : null
-                    };
-                })
-                : null,
-            servicePlan: {
-                ...record.servicePlan,
-                activeFrom: record.servicePlan.activeFrom !== null
-                    ? new Date(record.servicePlan.activeFrom)
-                    : null,
-                subscriptionActiveFrom: record.servicePlan.subscriptionActiveFrom !== null
-                    ? new Date(record.servicePlan.subscriptionActiveFrom)
-                    : null,
-                subscriptionEndDate: record.servicePlan.subscriptionEndDate !== null
-                    ? new Date(record.servicePlan.subscriptionEndDate)
-                    : null,
-                overageLineDeactivatedDate: record.servicePlan.overageLineDeactivatedDate !== null
-                    ? new Date(record.servicePlan.overageLineDeactivatedDate)
-                    : null
-            },
-            lastUpdated: record.lastUpdated !== null ? new Date(record.lastUpdated) : null
-        };
-    }
-
-    /**
-     * Transforms the API response for a Subscription request into an actual response
-     *
-     * @param record
-     * @private
-     */
-    private transformSubscription (
-        record: Starlink.Management.APIResponse.Subscription
-    ): Starlink.Management.Response.Subscription {
-        return {
-            ...record,
-            startDate: record.startDate !== null ? new Date(record.startDate) : null,
-            normalizedStartDate: record.normalizedStartDate !== null
-                ? new Date(record.normalizedStartDate)
-                : null,
-            endDate: record.endDate !== null ? new Date(record.endDate) : null,
-            serviceEndDate: record.serviceEndDate !== null ? new Date(record.serviceEndDate) : null
-        };
-    }
-
-    /**
      * Updates an address within the account
      *
      * @param address
@@ -994,7 +1050,8 @@ export default class Account extends BaseAPI {
     ): Promise<Starlink.Management.Response.Address> {
         const response = await this.put<Starlink.Common.Content<Starlink.Management.APIResponse.Address>>(
             `/enterprise/v1/account/${this.accountNumber}/addresses`,
-            address);
+            address
+        );
 
         return response.content;
     }
@@ -1007,13 +1064,13 @@ export default class Account extends BaseAPI {
     public async update_default_router_config (
         configId: string
     ): Promise<boolean> {
-        const response = await this.put<
-            Starlink.Common.PagedContent<Starlink.Management.APIResponse.Account[]>>(
-                `/enterprise/v1/accounts/${this.accountNumber}/update-default-router-config`,
-                { configId });
+        const response = await this.put<Starlink.Common.PagedContent<Starlink.Management.APIResponse.Account[]>>(
+            `/enterprise/v1/accounts/${this.accountNumber}/update-default-router-config`,
+            { configId }
+        );
 
-        const account = response.content.results.filter(elem =>
-            elem.accountNumber === this.accountNumber)
+        const account = response.content.results
+            .filter(elem => elem.accountNumber === this.accountNumber)
             .shift();
 
         if (account) {
@@ -1023,6 +1080,34 @@ export default class Account extends BaseAPI {
         }
 
         return false;
+    }
+
+    /**
+     * The name of the account
+     */
+    public get accountName (): string | undefined {
+        return this.account.accountName || undefined;
+    }
+
+    /**
+     * The Account Number. Example: ACC-511274-31364-54
+     */
+    public get accountNumber (): string {
+        return this.account.accountNumber;
+    }
+
+    /**
+     * Default router config on the account
+     */
+    public get defaultRouterConfigId (): string | undefined {
+        return this.account.defaultRouterConfigId || undefined;
+    }
+
+    /**
+     * The region code of the account. Example: US
+     */
+    public get regionCode (): string {
+        return this.account.regionCode;
     }
 }
 

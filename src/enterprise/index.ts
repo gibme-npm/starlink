@@ -37,9 +37,12 @@ export default class StarlinkAPI extends BaseAPI {
     public async fetch_accounts (
         options: Partial<{
             /**
-             * The region code of the account
+             * If set to true, fetches all pages automatically
+             * Must set to false for `limit` and `page` to be honored
+             *
+             * @default true
              */
-            regionCode: string[];
+            all: boolean;
             /**
              * The number of accounts to return at a time
              *
@@ -53,13 +56,15 @@ export default class StarlinkAPI extends BaseAPI {
              */
             page: number;
             /**
-             * If set to true, fetches all pages automatically
-             * Must set to false for `limit` and `page` to be honored
-             *
-             * @default true
+             * The region code of the account
              */
-            all: boolean;
-        }> = { limit: 50, page: 0, all: true, regionCode: [] }
+            regionCode: string[];
+        }> = {
+            all: true,
+            limit: 50,
+            page: 0,
+            regionCode: []
+        }
     ): Promise<Account[]> {
         options.limit ??= 50;
         options.page ??= 0;
@@ -67,24 +72,35 @@ export default class StarlinkAPI extends BaseAPI {
         let response: Starlink.Common.PagedContent<Starlink.Management.APIResponse.Account[]>;
 
         if (!options.all) {
-            response = await this.get('/enterprise/v1/accounts', options);
+            response = await this.get(
+                '/enterprise/v1/accounts',
+                options
+            );
 
-            return response.content.results.map(account =>
-                new Account(this.client_id, this.client_secret, account));
+            return response.content.results.map(account => new Account(
+                this.client_id,
+                this.client_secret,
+                account
+            ));
         } else {
             const results: Account[] = [];
             let page = 0;
 
             do {
                 response = await this.get(
-                    '/enterprise/v1/accounts', {
+                    '/enterprise/v1/accounts',
+                    {
                         ...options,
-                        page: page++,
-                        limit: 100
-                    });
+                        limit: 100,
+                        page: page++
+                    }
+                );
 
-                results.push(...response.content.results.map(account =>
-                    new Account(this.client_id, this.client_secret, account)));
+                results.push(...response.content.results.map(account => new Account(
+                    this.client_id,
+                    this.client_secret,
+                    account
+                )));
             } while (!response.content.isLastPage);
 
             if (results.length !== response.content.totalCount) {

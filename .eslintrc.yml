@@ -6,25 +6,188 @@ extends:
   - standard
   - plugin:@typescript-eslint/eslint-recommended
   - plugin:@typescript-eslint/recommended
+  - plugin:perfectionist/recommended-natural
 parser: '@typescript-eslint/parser'
 parserOptions:
   ecmaVersion: 11
+  project: tsconfig.eslint.json
   sourceType: module
 plugins:
+  - '@stylistic'
+  - '@stylistic/ts'
   - '@typescript-eslint'
+  - import-newlines
+  - perfectionist
 rules: {
-  indent: [ "error", 4, {
+  '@stylistic/array-bracket-newline': [ 'error', {
+    minItems: 3
+  } ],
+  '@stylistic/array-element-newline': [ 'error', {
+    minItems: 3,
+    multiline: true
+  } ],
+  '@stylistic/function-call-argument-newline': [ 'error', 'always' ],
+  '@stylistic/function-paren-newline': [ 'error', 'multiline-arguments' ],
+  '@stylistic/implicit-arrow-linebreak': [ 'error', 'beside' ],
+  '@stylistic/indent': [ 'error', 4, {
     SwitchCase: 1
   } ],
-  linebreak-style: [ "off", "unix" ],
-  quotes: [ "error", "single" ],
-  semi: [ "error", "always" ],
-  camelcase: off,
-  max-len: [ "error", {
+  '@stylistic/linebreak-style': [ 'off', 'unix' ],
+  '@stylistic/max-len': [ 'error', {
     code: 120
   } ],
-  "@typescript-eslint/no-explicit-any": off,
-  "@typescript-eslint/no-namespace": off,
-  "@typescript-eslint/no-var-requires": off,
-  "@typescript-eslint/explicit-module-boundary-types": off
+  '@stylistic/newline-per-chained-call': [ 'error', {
+    ignoreChainWithDepth: 1
+  } ],
+  '@stylistic/object-curly-newline': [ 'error', {
+    ExportDeclaration: {
+      minProperties: 3,
+      multiline: true
+    },
+    ImportDeclaration: {
+      minProperties: 3,
+      multiline: true
+    },
+    ObjectExpression: {
+      minProperties: 3,
+      multiline: true
+    },
+    ObjectPattern: {
+      minProperties: 3,
+      multiline: true
+    }
+  } ],
+  '@stylistic/object-property-newline': [ 'error', {
+    allowAllPropertiesOnSameLine: false
+  } ],
+  '@stylistic/operator-linebreak': [ 'error', 'before' ],
+  '@stylistic/quotes': [ 'error', 'single' ],
+  '@stylistic/semi': [ 'error', 'always' ],
+  '@stylistic/ts/member-delimiter-style': 'error',
+  '@stylistic/ts/padding-line-between-statements': [
+    'error',
+    { blankLine: 'always', next: [ 'block', 'block-like', 'interface', 'type' ], prev: '*' },
+    { blankLine: 'always', next: '*', prev: [ 'block', 'block-like', 'interface', 'type' ] }
+  ],
+  '@typescript-eslint/consistent-generic-constructors': [ 'error', 'constructor' ],
+  '@typescript-eslint/consistent-indexed-object-style': [ 'error', 'record' ],
+  '@typescript-eslint/explicit-module-boundary-types': off,
+  '@typescript-eslint/lines-between-class-members': 'error',
+  '@typescript-eslint/method-signature-style': [ 'error', 'property' ],
+  '@typescript-eslint/no-explicit-any': off,
+  '@typescript-eslint/no-for-in-array': 'error',
+  '@typescript-eslint/no-namespace': off,
+  '@typescript-eslint/no-var-requires': off,
+  '@typescript-eslint/padding-line-between-statements': off,
+  camelcase: off,
+  import-newlines/enforce: [ 'error', {
+    items: 1
+  } ],
+  indent: off,
+  operator-linebreak: off,
+  perfectionist/sort-classes: [ 'error', {
+    groups: [
+      'index-signature',
+      'static-property',
+      'static-block',
+      [ 'protected-property', 'protected-accessor-property' ],
+      [ 'private-property', 'private-accessor-property' ],
+      [ 'property', 'accessor-property' ],
+      'constructor',
+      'static-method',
+      'protected-method',
+      'private-method',
+      'method',
+      [ 'get-method', 'set-method' ],
+      'unknown',
+    ],
+    ignore-case: true
+  } ],
+  perfectionist/sort-imports: [ 'error', {
+    groups: [
+      [ 'builtin', 'external' ],
+      'type',
+      'internal',
+      'internal-type',
+      [ 'parent', 'sibling', 'index' ],
+      [ 'parent-type', 'sibling-type', 'index-type' ],
+      'object',
+      'unknown'
+    ],
+    ignore-case: true
+  } ],
+  perfectionist/sort-interfaces: [ 'error', {
+    groups: [
+      [
+        'member',
+        'method',
+        'multiline',
+        'multiline-member',
+        'multiline-method',
+        'multiline-property',
+        'optional-member',
+        'optional-method',
+        'optional-multiline-member',
+        'optional-multiline-method',
+        'optional-multiline-property',
+        'optional-property',
+        'property',
+        'required-member',
+        'required-method',
+        'required-multiline-member',
+        'required-multiline-method',
+        'required-multiline-property',
+        'required-property',
+        'unknown'
+      ],
+      [ 'index-signature', 'optional-index-signature' ]
+    ],
+    ignore-case: true,
+    type: 'natural'
+  } ],
+  perfectionist/sort-named-exports: [ 'error', {
+    ignore-case: true
+  } ],
+  perfectionist/sort-named-imports: [ 'error', {
+    ignore-case: true
+  } ],
+  perfectionist/sort-object-types: [ 'error', {
+    groups: [
+      [
+        'member',
+        'method',
+        'multiline',
+        'multiline-member',
+        'multiline-method',
+        'multiline-property',
+        'optional-member',
+        'optional-method',
+        'optional-multiline-member',
+        'optional-multiline-method',
+        'optional-multiline-property',
+        'optional-property',
+        'property',
+        'required-member',
+        'required-method',
+        'required-multiline-member',
+        'required-multiline-method',
+        'required-multiline-property',
+        'required-property',
+        'unknown'
+      ],
+      [ 'index-signature', 'optional-index-signature' ]
+    ],
+    ignore-case: true,
+    type: 'natural'
+  } ],
+  perfectionist/sort-objects: [ 'error', {
+    ignore-case: true
+  } ],
+  perfectionist/sort-union-types: [ 'error', {
+    ignore-case: true,
+    nullable-last: true,
+    type: 'natural'
+  } ],
+  semi: off,
+  sort-keys: off
 }

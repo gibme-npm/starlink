@@ -18,14 +18,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import { createChannel, createClient } from 'nice-grpc';
-import {
-    DeviceClient,
-    DeviceDefinition,
-    DeepPartial
-} from '../../protobuf/spacex/api/device/service';
-import type { Request, Response } from '../../protobuf/spacex/api/device/device';
 import AbortController from 'abort-controller';
+import {
+    createChannel,
+    createClient
+} from 'nice-grpc';
+
+import {
+    DeepPartial,
+    DeviceClient,
+    DeviceDefinition
+} from '../../protobuf/spacex/api/device/service';
+
+import type {
+    Request,
+    Response
+} from '../../protobuf/spacex/api/device/device';
 
 export default abstract class GRPCApi {
     protected client: DeviceClient;
@@ -37,7 +45,10 @@ export default abstract class GRPCApi {
     ) {
         const channel = createChannel(`${host}:${port}`);
 
-        this.client = createClient(DeviceDefinition, channel);
+        this.client = createClient(
+            DeviceDefinition,
+            channel
+        );
     }
 
     /**
@@ -55,12 +66,16 @@ export default abstract class GRPCApi {
         let _timeout: NodeJS.Timeout | undefined;
 
         if (timeout) {
-            _timeout = setTimeout(() => controller.abort(), timeout);
+            _timeout = setTimeout(
+                () => controller.abort(),
+                timeout
+            );
         }
 
-        const response = await this.client.handle(request, {
-            signal: controller.signal as any
-        });
+        const response = await this.client.handle(
+            request,
+            { signal: controller.signal as AbortSignal }
+        );
 
         if (_timeout) {
             clearTimeout(_timeout);
@@ -70,4 +85,8 @@ export default abstract class GRPCApi {
     }
 }
 
-export { GRPCApi, DeviceClient, DeviceDefinition };
+export {
+    DeviceClient,
+    DeviceDefinition,
+    GRPCApi
+};

@@ -59,6 +59,8 @@
     "email": "brandonlehmann@gmail.com"
   },
   "devDependencies": {
+    "@stylistic/eslint-plugin": "1.8.1",
+    "@stylistic/eslint-plugin-ts": "1.8.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.7",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
@@ -67,8 +69,10 @@
     "eslint": "^8.56.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-import-newlines": "^1.4.0",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-perfectionist": "2.9.0",
     "eslint-plugin-promise": "^6.1.1",
     "grpc-tools": "^1.12.4",
     "mocha": "^10.2.0",

@@ -26,7 +26,50 @@ export default class RouterConfig extends BaseAPI {
         client_secret: string,
         private routerConfig: Starlink.Management.Response.RouterConfig
     ) {
-        super(client_id, client_secret);
+        super(
+            client_id,
+            client_secret
+        );
+    }
+
+    /**
+     * Update the router configuration
+     *
+     * Any router assigned to this configuration will immediately receive the updated if they are online.
+     * If it is not online, the router will receive the update when it comes online.
+     */
+    public async save (): Promise<boolean> {
+        try {
+            const response = await this.put<Starlink.Common.Content<Starlink.Management.APIResponse.RouterConfig>>(
+                `/enterprise/v1/account/${this.accountNumber}/routers/configs/${this.configId}`,
+                {
+                    nickname: this.nickname,
+                    routerConfigJson: JSON.stringify(this.config)
+                }
+            );
+
+            const {
+                routerConfigJson,
+                ...content
+            } = response.content;
+            const routerConfig = JSON.parse(routerConfigJson);
+
+            this.routerConfig = {
+                ...content,
+                routerConfig
+            };
+
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Converts the instance to a string (JSON encoded)
+     */
+    public toString (): string {
+        return JSON.stringify(this.routerConfig);
     }
 
     public get accountNumber (): string {
@@ -51,44 +94,6 @@ export default class RouterConfig extends BaseAPI {
 
     public set nickname (value: string) {
         this.routerConfig.nickname = value;
-    }
-
-    /**
-     * Update the router configuration
-     *
-     * Any router assigned to this configuration will immediately receive the updated if they are online.
-     * If it is not online, the router will receive the update when it comes online.
-     */
-    public async save (): Promise<boolean> {
-        try {
-            const response = await this.put<Starlink.Common.Content<Starlink.Management.APIResponse.RouterConfig>>(
-                `/enterprise/v1/account/${this.accountNumber}/routers/configs/${this.configId}`, {
-                    nickname: this.nickname,
-                    routerConfigJson: JSON.stringify(this.config)
-                });
-
-            const {
-                routerConfigJson,
-                ...content
-            } = response.content;
-            const routerConfig = JSON.parse(routerConfigJson);
-
-            this.routerConfig = {
-                ...content,
-                routerConfig
-            };
-
-            return true;
-        } catch {
-            return false;
-        }
-    }
-
-    /**
-     * Converts the instance to a string (JSON encoded)
-     */
-    public toString (): string {
-        return JSON.stringify(this.routerConfig);
     }
 }
 
