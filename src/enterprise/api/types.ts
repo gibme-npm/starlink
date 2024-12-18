@@ -54,8 +54,10 @@ export namespace Starlink {
                 pricePerGB: number;
                 usageLimitGB: number;
                 overageAmountGB: number;
+                consumedAmountGB: number;
                 overagePrice: number;
                 productId: string | null;
+                dataOverageType: number;
             }
 
             export interface BillingCycle<DateType extends string | Date = string> {
@@ -85,6 +87,13 @@ export namespace Starlink {
                 overageLines: OverageLine[] | null;
             }
 
+            export interface DataCategoryMapping {
+                [key: string]: any;
+                nonBillableGB: number;
+                priorityGB: number;
+                standardGB: number;
+            }
+
             export interface ServicePlan<DateType extends string | Date = string> {
                 isoCurrencyCode: string | null;
                 isMobilePlan: boolean;
@@ -98,6 +107,7 @@ export namespace Starlink {
                 overageLine: OverageLine;
                 productId: string | null;
                 usageLimitGB: number;
+                dataCategoryMapping: DataCategoryMapping | null;
             }
 
             export interface Address {
