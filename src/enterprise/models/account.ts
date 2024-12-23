@@ -46,7 +46,6 @@ export default class Account extends BaseAPI {
     ): Starlink.Management.Response.RealtimeDataTracking {
         return {
             ...record,
-            ...record,
             billingCycles: record.billingCycles !== null
                 ? record.billingCycles.map(cycle => {
                     return {
