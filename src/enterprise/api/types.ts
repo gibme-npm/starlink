@@ -23,52 +23,52 @@ export namespace Starlink {
         export namespace Components {
             export interface Account {
                 /**
-                 * The Account Number. Example: ACC-511274-31364-54
-                 */
-                accountNumber: string;
-                /**
-                 * The region code of the account. Example: US
-                 */
-                regionCode: string;
-                /**
                  * The name of the account
                  */
                 accountName: string | null;
                 /**
+                 * The Account Number. Example: ACC-511274-31364-54
+                 */
+                accountNumber: string;
+                /**
                  * Default router config on the account
                  */
                 defaultRouterConfigId: string | null;
+                /**
+                 * The region code of the account. Example: US
+                 */
+                regionCode: string;
             }
 
-            export interface DataUsage<DateType extends string | Date = string> {
+            export interface DataUsage<DateType extends Date | string = string> {
                 date: DateType;
-                priorityGB: number;
-                optInPriorityGB: number;
-                standardGB: number;
                 nonBillableGB: number;
+                optInPriorityGB: number;
+                priorityGB: number;
+                standardGB: number;
             }
 
             export interface OverageLine {
+                consumedAmountGB: number;
+                dataOverageType: number;
+                overageAmountGB: number;
+                overagePrice: number;
+                pricePerGB: number;
+                productId: string | null;
                 restricted: number;
                 unrestricted: number;
-                pricePerGB: number;
                 usageLimitGB: number;
-                overageAmountGB: number;
-                consumedAmountGB: number;
-                overagePrice: number;
-                productId: string | null;
-                dataOverageType: number;
             }
 
-            export interface BillingCycle<DateType extends string | Date = string> {
-                startDate: DateType;
-                endDate: DateType;
+            export interface BillingCycle<DateType extends Date | string = string> {
                 dailyDataUsage: DataUsage<DateType>[] | null;
+                endDate: DateType;
                 overageLines: OverageLine[] | null;
+                startDate: DateType;
+                totalNonBillableGB: number;
+                totalOptInPriorityGB: number;
                 totalPriorityGB: number;
                 totalStandardGB: number;
-                totalOptInPriorityGB: number;
-                totalNonBillableGB: number
             }
 
             export interface DataBucket {
@@ -76,15 +76,15 @@ export namespace Starlink {
                 totalGB: number;
             }
 
-            export interface ServiceLineBillingCycle<DateType extends string | Date = string> {
-                startDate: DateType;
-                endDate: DateType;
-                dataUsage: DataBucket[] | null;
+            export interface ServiceLineBillingCycle<DateType extends Date | string = string> {
                 dailyDataUsages: {
-                    date: DateType;
                     dataUsageBins: DataBucket[] | null;
+                    date: DateType;
                 }[] | null;
+                dataUsage: DataBucket[] | null;
+                endDate: DateType;
                 overageLines: OverageLine[] | null;
+                startDate: DateType;
             }
 
             export interface DataCategoryMapping {
@@ -94,66 +94,61 @@ export namespace Starlink {
                 standardGB: number;
             }
 
-            export interface ServicePlan<DateType extends string | Date = string> {
-                isoCurrencyCode: string | null;
-                isMobilePlan: boolean;
+            export interface ServicePlan<DateType extends Date | string = string> {
                 activeFrom: DateType | null;
+                dataCategoryMapping: DataCategoryMapping | null;
+                isMobilePlan: boolean;
+                isoCurrencyCode: string | null;
+                isOptedIntoOverage: boolean;
+                overageDescription: string | null;
+                overageLine: OverageLine;
+                overageLineDeactivatedDate: DateType | null;
+                overageName: string | null;
+                productId: string | null;
                 subscriptionActiveFrom: DateType | null;
                 subscriptionEndDate: DateType | null;
-                overageName: string | null;
-                overageDescription: string | null;
-                isOptedIntoOverage: boolean;
-                overageLineDeactivatedDate: DateType | null;
-                overageLine: OverageLine;
-                productId: string | null;
                 usageLimitGB: number;
-                dataCategoryMapping: DataCategoryMapping | null;
             }
 
             export interface Address {
                 addressLines: string[];
-                locality?: string | null;
                 administrativeArea?: string | null;
                 administrativeAreaCode: string;
-                region?: string | null;
-                regionCode: string;
-                postalCode?: string | null;
-                metadata?: string | null;
                 formattedAddress: string;
                 latitude: number;
+                locality?: string | null;
                 longitude: number;
+                metadata?: string | null;
+                postalCode?: string | null;
+                region?: string | null;
+                regionCode: string;
             }
 
             export interface AddressId extends Required<Address> {
                 addressReferenceId: string;
             }
 
-            export interface RealtimeDataTracking<DateType extends string | Date = string> {
+            export interface RealtimeDataTracking<DateType extends Date | string = string> {
                 accountNumber: string | null;
-                serviceLineNumber: string | null;
-                startDate: DateType;
-                endDate: DateType;
                 billingCycles: BillingCycle<DateType>[] | null;
-                servicePlan: ServicePlan<DateType>;
+                endDate: DateType;
                 lastUpdated: DateType | null;
+                serviceLineNumber: string | null;
+                servicePlan: ServicePlan<DateType>;
+                startDate: DateType;
             }
 
-            export interface ServiceLineDataUsage<DateType extends string | Date = string>
-                extends Omit<RealtimeDataTracking<DateType>, 'serviceLineNumber' | 'billingCycles'> {
+            export interface ServiceLineDataUsage<DateType extends Date | string = string>
+                extends Omit<RealtimeDataTracking<DateType>, 'billingCycles' | 'serviceLineNumber'> {
                 assetNumber: string | null;
                 billingCycles: ServiceLineBillingCycle<DateType>[] | null;
             }
 
             export interface Router {
-                routerId: string;
                 /**
                  * Account Number this router is bonded to.
                  */
                 accountNumber: string;
-                /**
-                 * User terminal Id this router is bonded to.
-                 */
-                userTerminalId: string;
                 /**
                  * Router config this router is assigned to, or empty if no config assigned.
                  */
@@ -166,6 +161,11 @@ export namespace Starlink {
                  * Hardware version of the router: 'v1', 'v2', or 'v3'.
                  */
                 hardwareVersion: string;
+                routerId: string;
+                /**
+                 * User terminal Id this router is bonded to.
+                 */
+                userTerminalId: string;
             }
 
             export interface RouterConfig {
@@ -175,118 +175,118 @@ export namespace Starlink {
             }
 
             export interface SubscriptionProduct {
-                productReferenceId: string;
-                name: string;
-                price: number;
                 isoCurrencyCode: string;
                 isSla: boolean;
+                name: string;
+                price: number;
+                productReferenceId: string;
             }
 
-            export interface Subscription<DateType extends string | Date = string> {
+            export interface Subscription<DateType extends Date | string = string> {
                 /**
-                 * Subscription Reference ID. Example: 55ec6574-10d8-bd9c-1951-d4184f4ae467
+                 * Scheduled product change for the next bill date
                  */
-                subscriptionReferenceId: string;
-                /**
-                 * Service Line Number associated with subscription. Example: AST-511274-31364-54
-                 */
-                serviceLineNumber: string | null;
+                delayedProductId: string | null;
                 /**
                  * Description of the subscription
                  */
                 description: string;
-                /**
-                 * The unique product identifier
-                 */
-                productReferenceId: string;
-                /**
-                 * The start date of the subscription. This is in UTC
-                 */
-                startDate: DateType | null;
-                /**
-                 * The start date of the subscription rounded to the nearest day. This is in UTC
-                 */
-                normalizedStartDate: DateType | null;
                 /**
                  * The service line deactivation date, which only appears if the service line is deactivated.
                  * This is in UTC
                  */
                 endDate: DateType | null;
                 /**
+                 * The start date of the subscription rounded to the nearest day. This is in UTC
+                 */
+                normalizedStartDate: DateType | null;
+                /**
+                 * Opt-in product id, opted out if empty
+                 */
+                optInProductId: string | null;
+                /**
+                 * The unique product identifier
+                 */
+                productReferenceId: string;
+                /**
                  * The subscription billing end date, which only appears if the service line is deactivated.
                  * The subscription will remain active until this date. This is in UTC
                  */
                 serviceEndDate: DateType | null;
                 /**
-                 * Scheduled product change for the next bill date
+                 * Service Line Number associated with subscription. Example: AST-511274-31364-54
                  */
-                delayedProductId: string | null;
+                serviceLineNumber: string | null;
                 /**
-                 * Opt-in product id, opted out if empty
+                 * The start date of the subscription. This is in UTC
                  */
-                optInProductId: string | null;
+                startDate: DateType | null;
+                /**
+                 * Subscription Reference ID. Example: 55ec6574-10d8-bd9c-1951-d4184f4ae467
+                 */
+                subscriptionReferenceId: string;
             }
 
             export interface UserTerminal {
-                userTerminalId: string;
-                kitSerialNumber: string;
-                dishSerialNumber: string;
-                serviceLineNumber: string | null;
                 active: boolean;
+                dishSerialNumber: string;
+                kitSerialNumber: string;
                 routers: Router[];
+                serviceLineNumber: string | null;
+                userTerminalId: string;
             }
 
-            export interface ServiceLine<DateType extends string | Date = string> {
+            export interface ServiceLine<DateType extends Date | string = string> {
+                /**
+                 * Indicates if service line is active
+                 */
+                active: boolean;
                 /**
                  * Address Reference ID of the address associated with the service line.
                  * Example: 55ec6574-10d8-bd9c-1951-d4184f4ae467
                  */
                 addressReferenceId: string;
                 /**
-                 * The Service Line Number. Example: AST-511274-31364-54
-                 */
-                serviceLineNumber: string;
-                /**
-                 * A user-defined nickname for this service line
-                 */
-                nickname: string | null;
-                /**
-                 * The unique product identifier
-                 */
-                productReferenceId: string;
-                /**
                  * Scheduled product change for next bill date
                  */
                 delayedProductId: string | null;
-                /**
-                 * Opt-in product id, opted out if empty
-                 */
-                optInProductId: string | null;
-                /**
-                 * The start date of the subscription. This is in UTC.
-                 */
-                startDate: DateType | null;
                 /**
                  * The service line deactivation date, which only appears if the service line is deactivated.
                  * This is in UTC.
                  */
                 endDate: DateType | null;
                 /**
+                 * A user-defined nickname for this service line
+                 */
+                nickname: string | null;
+                /**
+                 * Opt-in product id, opted out if empty
+                 */
+                optInProductId: string | null;
+                /**
+                 * The unique product identifier
+                 */
+                productReferenceId: string;
+                /**
                  * Indicates if service line is public IP
                  */
                 publicIp: boolean;
                 /**
-                 * Indicates if service line is active
+                 * The Service Line Number. Example: AST-511274-31364-54
                  */
-                active: boolean;
+                serviceLineNumber: string;
+                /**
+                 * The start date of the subscription. This is in UTC.
+                 */
+                startDate: DateType | null;
             }
 
-            export interface OptInProduct<DateType extends string | Date = string> {
-                productId: string | null;
+            export interface OptInProduct<DateType extends Date | string = string> {
                 activatedBySubjectId: string | null;
                 activatedDate: DateType;
                 deactivatedBySubjectId: string | null;
                 deactivatedDate: DateType | null;
+                productId: string | null;
             }
         }
 
@@ -357,17 +357,17 @@ export namespace Starlink {
 
     export namespace Telemetry {
         export namespace APIResponse {
-            export type DataValue = Array<number | string> | boolean | number | null | string;
+            export type DataValue = Array<number | string> | boolean | number | string | null;
 
             export interface Data {
                 data: {
+                    columnNamesByDeviceType: Record<string, string[]>;
                     values: DataValue[][];
-                    columnNamesByDeviceType: { [key: string]: string[] };
                 };
                 metadata: {
                     enums: {
-                        DeviceType: { [key: string]: string };
-                        AlertsByDeviceType: { [key: string]: { [key: string]: string } };
+                        AlertsByDeviceType: Record<string, Record<string, string>>;
+                        DeviceType: Record<string, string>;
                     };
                 };
             }
@@ -375,60 +375,60 @@ export namespace Starlink {
 
         export namespace Components {
             export interface Id {
-                UtcTimestampNs: number;
                 DeviceId: string;
+                UtcTimestampNs: number;
             }
 
             export interface Router extends Id {
-                WifiUptimeS: number;
-                WifiSoftwareVersion: string;
-                WifiIsRepeater: boolean;
-                WifiIsBypassed: boolean;
-                InternetPingDropRate: number;
-                InternetPingLatencyMs: number;
-                WifiPopPingDropRate: number;
-                WifiPopPingLatencyMs: number;
-                DishPingDropRate: number;
-                DishPingLatencyMs: number;
                 Clients: number;
                 Clients2Ghz: number;
+                Clients2GhzRxRateMbpsAvg: number | null;
+                Clients2GhzRxRateMbpsMax: number | null;
+                Clients2GhzRxRateMbpsMin: number | null;
+                Clients2GhzSignalStrengthAvg: number | null;
+                Clients2GhzSignalStrengthMax: number | null;
+                Clients2GhzSignalStrengthMin: number | null;
+                Clients2GhzTxRateMbpsAvg: number | null;
+                Clients2GhzTxRateMbpsMax: number | null;
+                Clients2GhzTxRateMbpsMin: number | null;
                 Clients5Ghz: number;
+                Clients5GhzRxRateMbpsAvg: number | null;
+                Clients5GhzRxRateMbpsMax: number | null;
+                Clients5GhzRxRateMbpsMin: number | null;
+                Clients5GhzSignalStrengthAvg: number | null;
+                Clients5GhzSignalStrengthMax: number | null;
+                Clients5GhzSignalStrengthMin: number | null;
+                Clients5GhzTxRateMbpsAvg: number | null;
+                Clients5GhzTxRateMbpsMax: number | null;
+                Clients5GhzTxRateMbpsMin: number | null;
                 ClientsEth: number;
+                DishId: string;
+                DishPingDropRate: number;
+                DishPingLatencyMs: number;
+                InternetPingDropRate: number;
+                InternetPingLatencyMs: number;
                 WanRxBytes: number;
                 WanTxBytes: number;
-                Clients2GhzRxRateMbpsMin: number | null;
-                Clients2GhzRxRateMbpsMax: number | null;
-                Clients2GhzRxRateMbpsAvg: number | null;
-                Clients2GhzTxRateMbpsMin: number | null;
-                Clients2GhzTxRateMbpsMax: number | null;
-                Clients2GhzTxRateMbpsAvg: number | null;
-                Clients5GhzRxRateMbpsMin: number | null;
-                Clients5GhzRxRateMbpsMax: number | null;
-                Clients5GhzRxRateMbpsAvg: number | null;
-                Clients5GhzTxRateMbpsMin: number | null;
-                Clients5GhzTxRateMbpsMax: number | null;
-                Clients5GhzTxRateMbpsAvg: number | null;
-                Clients2GhzSignalStrengthMin: number | null;
-                Clients2GhzSignalStrengthMax: number | null;
-                Clients2GhzSignalStrengthAvg: number | null;
-                Clients5GhzSignalStrengthMin: number | null;
-                Clients5GhzSignalStrengthMax: number | null;
-                Clients5GhzSignalStrengthAvg: number | null;
-                DishId: string;
+                WifiIsBypassed: boolean;
+                WifiIsRepeater: boolean;
+                WifiPopPingDropRate: number;
+                WifiPopPingLatencyMs: number;
+                WifiSoftwareVersion: string;
+                WifiUptimeS: number;
             }
 
             export interface UserTerminal extends Id {
-                DownlinkThroughput: number,
-                UplinkThroughput: number,
-                PingDropRateAvg: number,
-                PingLatencyMsAvg: number,
-                ObstructionPercentTime: number,
-                Uptime: number,
-                SignalQuality: number,
-                H3CellId: number,
-                SecondsUntilSwupdateRebootPossible: number,
+                ActiveAlerts: string [];
+                DownlinkThroughput: number;
+                H3CellId: number;
+                ObstructionPercentTime: number;
+                PingDropRateAvg: number;
+                PingLatencyMsAvg: number;
                 RunningSoftwareVersion: string;
-                ActiveAlerts: string []
+                SecondsUntilSwupdateRebootPossible: number;
+                SignalQuality: number;
+                UplinkThroughput: number;
+                Uptime: number;
             }
         }
 
@@ -445,26 +445,26 @@ export namespace Starlink {
     export namespace Common {
         export namespace Components {
             export interface Member {
-                memberNames: string[];
                 errorMessage: string;
+                memberNames: string[];
             }
 
             export interface IPayload {
                 errors: Member[];
-                warnings: Member[];
                 information: string[];
                 isValid: boolean;
+                warnings: Member[];
             }
         }
 
         export interface PagedContent<Type = any> extends Components.IPayload {
             content: {
-                totalCount: number;
-                pageIndex: number;
-                limit: number;
                 isLastPage: boolean;
+                limit: number;
+                pageIndex: number;
                 results: Type;
-            }
+                totalCount: number;
+            };
         }
 
         export interface Content<Type = any> extends Components.IPayload {
@@ -472,12 +472,12 @@ export namespace Starlink {
         }
     }
 
-    export type Response = Common.PagedContent | Common.Content | Telemetry.APIResponse.Data;
+    export type Response = Common.Content | Common.PagedContent | Telemetry.APIResponse.Data;
 
     export interface Token {
         access_token: string;
         expires_in: number;
-        token_type: string;
         scope: string;
+        token_type: string;
     }
 }
