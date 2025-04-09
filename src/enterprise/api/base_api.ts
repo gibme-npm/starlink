@@ -19,10 +19,7 @@
 // SOFTWARE.
 
 import Cache from '@gibme/cache/memory';
-import fetch, {
-    Headers,
-    HTTP_METHOD
-} from '@gibme/fetch';
+import fetch, { HTTP_METHOD } from '@gibme/fetch';
 
 import { Starlink } from './types';
 export { Starlink } from './types';
@@ -67,7 +64,7 @@ export default abstract class BaseAPI {
      */
     private async authenticate (): Promise<boolean> {
         const response = await fetch.post(
-            'https://api.starlink.com/auth/connect/token',
+            'https://www.starlink.com/api/auth/connect/token',
             {
                 formData: {
                     client_id: this.client_id,
@@ -133,15 +130,10 @@ export default abstract class BaseAPI {
         );
 
         // construct our headers
-        const headers = new Headers();
-        headers.set(
-            'accept',
-            'application/json'
-        );
-        headers.set(
-            'authorization',
-            `${BaseAPI.token?.token_type} ${BaseAPI.token?.access_token}`
-        );
+        const headers = {
+            Accept: 'application/json',
+            Authorization: `${BaseAPI.token?.token_type} ${BaseAPI.token?.access_token}`
+        };
 
         // construct any query string parameters
         const qs = new URLSearchParams();
