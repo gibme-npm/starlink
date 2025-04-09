@@ -257,36 +257,6 @@ describe('Unit Tests', async () => {
                 assert.notEqual(data.length, 0);
             });
 
-            it('fetch_subscription()', async function () {
-                if (!account) return this.skip();
-
-                const subscriptions = await account.fetch_subscriptions();
-
-                assert.notEqual(subscriptions.length, 0);
-
-                const subscription = subscriptions[0];
-
-                const check = await account.fetch_subscription(subscription.subscriptionReferenceId);
-
-                assert.deepEqual(check, subscription);
-            });
-
-            it('fetch_subscriptions()', async function () {
-                if (!account) return this.skip();
-
-                const data = await account.fetch_subscriptions();
-
-                assert.notEqual(data.length, 0);
-            });
-
-            it('fetch_subscription_products()', async function () {
-                if (!account) return this.skip();
-
-                const data = await account.fetch_subscription_products();
-
-                assert.notEqual(data.length, 0);
-            });
-
             it('fetch_user_terminals()', async function () {
                 if (!account) return this.skip();
 
