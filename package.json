@@ -1,6 +1,6 @@
 {
   "name": "@gibme/starlink",
-  "version": "0.0.5",
+  "version": "0.9.0",
   "description": "A Package for interacting with various Starlink API(s)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -83,11 +83,11 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@gibme/cache": "^1.1.10",
-    "@gibme/fetch": "^1.0.14",
+    "@gibme/cache": "^1.1.13",
+    "@gibme/fetch": "^1.1.1",
     "abort-controller": "^3.0.0",
-    "nice-grpc": "^2.1.9",
-    "protobufjs": "^7.3.2",
-    "rxjs": "^7.8.1"
+    "nice-grpc": "^2.1.12",
+    "protobufjs": "^7.4.0",
+    "rxjs": "^7.8.2"
   }
 }
