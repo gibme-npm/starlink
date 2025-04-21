@@ -40,7 +40,7 @@ export default abstract class BaseAPI {
      * requests
      */
     private static readonly cache = new Cache({
-        checkperiod: 5,
+        checkperiod: 1,
         stdTTL: 60
     });
 
@@ -115,6 +115,14 @@ export default abstract class BaseAPI {
         // if we are close to exceeding the rate limit, back off and wait 100ms
         if (await BaseAPI.requestCount() >= BaseAPI.requestLimit - 5) {
             await sleep(100);
+
+            return this.execute<Type>(
+                method,
+                endpoint,
+                params,
+                payload,
+                is_retry
+            );
         }
 
         // sets a key in the cache for the request, so that it can be counted towards our rate limit
