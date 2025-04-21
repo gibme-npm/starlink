@@ -103,6 +103,19 @@ export default class ServiceLine extends BaseAPI {
             servicePlan: {
                 ...record.servicePlan,
                 activeFrom: record.servicePlan.activeFrom !== null ? new Date(record.servicePlan.activeFrom) : null,
+                dataPoolUsage: record.servicePlan.dataPoolUsage
+                    ? {
+                        ...record.servicePlan.dataPoolUsage,
+                        dataBlocks: record.servicePlan.dataPoolUsage.dataBlocks?.map(elem => {
+                            return {
+                                ...elem,
+                                expirationDateUtc: new Date(elem.expirationDateUtc),
+                                startDateUtc: new Date(elem.startDateUtc)
+                            };
+                        }) || [],
+                        lastUpdated: new Date(record.servicePlan.dataPoolUsage.lastUpdated)
+                    }
+                    : undefined,
                 overageLineDeactivatedDate: record.servicePlan.overageLineDeactivatedDate !== null
                     ? new Date(record.servicePlan.overageLineDeactivatedDate)
                     : null,

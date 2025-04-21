@@ -94,9 +94,28 @@ export namespace Starlink {
                 standardGB: number;
             }
 
+            export interface DataPoolUsage<DateType extends Date | string = string> {
+                blocksCount: number;
+                consumedAmountGB: number;
+                dataBlockType: unknown;
+                expirationDateUtc: DateType;
+                isoCurrencyCode: string;
+                perBlockAmountGB: number;
+                perBlockPrice: number;
+                productId: string;
+                startDateUtc: DateType;
+                totalAmountGB: number;
+                totalPrice: number;
+            }
+
             export interface ServicePlan<DateType extends Date | string = string> {
                 activeFrom: DateType | null;
                 dataCategoryMapping: DataCategoryMapping | null;
+                dataPoolUsage?: {
+                    accountNumber: string;
+                    dataBlocks: DataPoolUsage<DateType>[] | null;
+                    lastUpdated: DateType;
+                };
                 isMobilePlan: boolean;
                 isoCurrencyCode: string | null;
                 isOptedIntoOverage: boolean;
