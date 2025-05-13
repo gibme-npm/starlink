@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 import Cache from '@gibme/cache/memory';
-import fetch, { HTTP_METHOD } from '@gibme/fetch';
+import fetch from '@gibme/fetch';
 
 import { Starlink } from './types';
 export { Starlink } from './types';
@@ -101,12 +101,14 @@ export default abstract class BaseAPI {
      */
     private async execute<Type extends Starlink.Response = any>
     (
-        method: HTTP_METHOD,
+        method: string,
         endpoint: string,
         params: Record<string, any> = {},
         payload?: Record<string, any> | string,
         is_retry = false
     ): Promise<Type> {
+        method = method.toUpperCase();
+
         // if we don't have a token, and we cannot authenticate to get one, fail
         if (!BaseAPI.token && !await this.authenticate()) {
             throw new Error('Could not authenticate with API');
@@ -158,7 +160,7 @@ export default abstract class BaseAPI {
             `${this.baseUrl}${endpoint}?${qs.toString()}`,
             {
                 headers,
-                json: (method === HTTP_METHOD.PATCH || method === HTTP_METHOD.POST || method === HTTP_METHOD.PUT)
+                json: (method === 'PATCH' || method === 'POST' || method === 'PUT')
                     ? payload
                     : undefined,
                 method
@@ -205,7 +207,7 @@ export default abstract class BaseAPI {
         params: Record<string, any> = {}
     ): Promise<Type> {
         return this.execute(
-            HTTP_METHOD.DELETE,
+            'DELETE',
             endpoint,
             params
         );
@@ -223,7 +225,7 @@ export default abstract class BaseAPI {
         params: Record<string, any> = {}
     ): Promise<Type> {
         return this.execute(
-            HTTP_METHOD.GET,
+            'GET',
             endpoint,
             params
         );
@@ -241,7 +243,7 @@ export default abstract class BaseAPI {
         payload?: object
     ): Promise<Type> {
         return this.execute(
-            HTTP_METHOD.POST,
+            'POST',
             endpoint,
             {},
             payload
@@ -260,7 +262,7 @@ export default abstract class BaseAPI {
         payload?: object | string
     ): Promise<Type> {
         return this.execute(
-            HTTP_METHOD.PUT,
+            'PUT',
             endpoint,
             {},
             payload
