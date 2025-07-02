@@ -188,6 +188,27 @@ message DishGetDiagnosticsResponse
 
 		/// The user has exceeded the data usage quota and sandbox policy has been enforced.
 		DATA_OVERAGE_SANDBOX_POLICY = 7;
+
+		/// The user is in a disabled cell
+		CELL_IS_DISABLED = 8;
+
+		/// The user is in an unlicensed country
+		UNLICENSED_COUNTRY = 9;
+
+		/// The user is roam restricted, controlled from GCP via policy feature value
+		ROAM_RESTRICTED = 10;
+
+		/// The user's location is unknown to perform geo-restriction
+		UNKNOWN_LOCATION = 11;
+
+		/// The user needs to log in to get more data about their restriction
+		ACCOUNT_DISABLED = 12;
+
+		// The user's terminal is running an old version that is unsupported on the network
+		UNSUPPORTED_VERSION = 13;
+
+		/// The user's terminal is moving faster than their policy allows for service
+		MOVING_TO_FAST_FOR_POLICY = 14;
 	}
 	DisablementCode disablement_code = 6;
 
@@ -205,6 +226,70 @@ message DishGetDiagnosticsResponse
 
 		/// Altitude in meters above sea level.
 		double altitude_meters = 4;
+
+		// Whether the uncertainty_meters field is valid
+		bool uncertainty_meters_valid = 5;
+
+		// Estimated 1-sigma postion uncertainty
+		double uncertainty_meters = 6;
+
+		// Time of this measurement, in seconds since GPS echo (Jan 6 1980)
+		double gps_time_s = 7;
 	}
 	Location location = 8;
+
+	message AlignmentStats {
+		/// Boresight is where the dish is currently pointing.
+
+		/// Azimuth is the rotation from the North.
+		/// When Azimuth is 0, the terminal is facing North.
+		/// When Azimuth 90, the terminal is facing East.
+		/// Boresight azimuth is how far the the dish is currently rotated.
+		float boresight_azimuth_deg = 1;
+
+		/// Elevation is tilt from horizontal.
+		/// When elevation is 0, the terminal is vertical.
+		/// When elevation is 90, the terminal is perfectly horizontal.
+		/// Boresight elevation is how far the dish is currently tilted.
+		float boresight_elevation_deg = 2;
+
+		/// Desired boresight azimuth is the ideal rotation of the terminal.
+		/// When desired boresight azimuth is > boresight azimuth, then the terminal
+		/// should be rotated clockwise.
+		float desired_boresight_azimuth_deg = 3;
+
+		/// Desired boresight elevation is the ideal tilt of the terminal using the
+		/// elevation scale. When desired boresight elevation is > boresight
+		/// elevation, then terminal should be tilted horizontally.
+		float desired_boresight_elevation_deg = 4;
+	}
+	AlignmentStats alignment_stats = 9;
+
+	/// Whether the dish is currently stowed
+	bool stowed = 10;
+
+	enum TestResultCode {
+		GENERAL = 0;
+		BOOT_UP = 1;
+		CPU_VOLTAGE = 2;
+		DBF_AAP_CS = 3;
+		DBF_NUM_FEMS = 4;
+		DBF_READ_ERRORS = 5;
+		DBF_T_DIE_0 = 6;
+		DBF_T_DIE_1 = 7;
+		DBF_T_DIE_0_VALID = 8;
+		DBF_T_DIE_1_VALID = 9;
+		ETH_PRIME = 10;
+		EIRP = 11;
+		FEM_CUT = 12;
+		FUSE_AVS = 13;
+		GPS = 14;
+		IMU = 15;
+		PHY = 16;
+		SCP_ERROR = 17;
+		TEMPERATURE = 18;
+		VTSENS = 19;
+	}
+
+	repeated TestResultCode hardware_self_test_codes = 11;
 }
