@@ -28,6 +28,7 @@ import {
 import {
     Account,
     Dishy,
+    gpsTimeToUTC,
     ServiceLine,
     StarlinkAPI,
     WiFiRouter
@@ -47,6 +48,12 @@ describe('Unit Tests', async () => {
                     assert.notEqual(data.id.length, 0, 'Returned ID length is 0');
                     assert.notEqual(data.hardwareVersion.length, 0, 'Returned HardwareVersion.length is 0');
                     assert.notEqual(data.softwareVersion.length, 0, 'Returned SoftwareVersion.length is 0');
+
+                    if (data.location?.gpsTimeS) {
+                        const timestamp = gpsTimeToUTC(data.location.gpsTimeS);
+
+                        assert.notEqual(timestamp, 0);
+                    }
                 })
                 .catch(() => {
                     unreachable = true;
@@ -118,7 +125,6 @@ describe('Unit Tests', async () => {
         it('fetch_diagnostics()', async function () {
             await router.fetch_diagnostics()
                 .then(data => {
-                    console.log(data);
                     assert.notEqual(data.id.length, 0, 'Returned ID length is 0');
                     assert.notEqual(data.hardwareVersion.length, 0, 'Returned HardwareVersion length is 0');
                     assert.notEqual(data.softwareVersion.length, 0, 'Returned SoftwareVersion length is 0');

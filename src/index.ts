@@ -20,3 +20,33 @@
 
 export * from './enterprise';
 export * from './local';
+
+/**
+ * Converts a `gpsTimeS` (the number of seconds since the GPS epoch (1980-01-06 00:00:00 UTC) to a Javascript
+ * Date object in UTC
+ * @param gpsTimeS
+ */
+export const gpsTimeToUTCDate = (gpsTimeS: number): Date => {
+    const gpsEpoch = new Date(Date.UTC(
+        1980,
+        0,
+        6,
+        0,
+        0,
+        0
+    ));
+
+    const gpsUtcOffset = 19; // as of 2025, GPS time is 19 seconds ahead of UTC
+
+    const utcMillis = gpsEpoch.getTime() + (gpsTimeS * 1000) - (gpsUtcOffset * 1000);
+
+    return new Date(utcMillis);
+};
+
+/**
+ * Converts a `gpsTimeS` (the number of seconds since the GPS epoch (1980-01-06 00:00:00 UTC) to
+ * a UTC timestamp
+ * @param gpsTimeS
+ */
+export const gpsTimeToUTC = (gpsTimeS: number): number => gpsTimeToUTCDate(gpsTimeS)
+    .getTime();

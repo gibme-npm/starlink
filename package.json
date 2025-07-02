@@ -1,6 +1,6 @@
 {
   "name": "@gibme/starlink",
-  "version": "0.9.3",
+  "version": "0.10.0",
   "description": "A Package for interacting with various Starlink API(s)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
