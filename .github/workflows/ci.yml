@@ -6,7 +6,7 @@ on:
   release:
     types: [published]
   schedule:
-    - cron: '30 3 * * *'
+    - cron: '30 3 * * 1,6'
 
 jobs:
   build:
@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node: ['18', '20']
+        node: ['20', '22']
     name: ${{ matrix.os }} - Node ${{ matrix.node }} Test
     steps:
     - uses: actions/checkout@v1
@@ -45,7 +45,7 @@ jobs:
     - name: Execute Unit Tests
       run: yarn test
     - name: Publish to NPM
-      if: matrix.node == '18' && matrix.os == 'ubuntu-latest' && github.event_name == 'release'
+      if: matrix.node == '20' && matrix.os == 'ubuntu-latest' && github.event_name == 'release'
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       run: npm publish --access public
