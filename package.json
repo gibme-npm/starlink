@@ -83,7 +83,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@gibme/cache": "^20.0.1",
+    "@gibme/cache": "^20.0.2",
     "@gibme/fetch": "^20.0.0",
     "abort-controller": "^3.0.0",
     "nice-grpc": "^2.1.12",
