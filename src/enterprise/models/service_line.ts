@@ -144,8 +144,8 @@ export default class ServiceLine extends BaseAPI {
             periodStart: string;
             productReferenceId: string;
         }[]>>(
-            `/enterprise/v1/account/${this.accountNumber}/`
-            + `service-lines/${this.serviceLineNumber}/billing-cycle/partial-periods`
+            `/enterprise/v1/account/${this.accountNumber}/` +
+            `service-lines/${this.serviceLineNumber}/billing-cycle/partial-periods`
         );
 
         return response.content.map(record => {
@@ -238,7 +238,7 @@ export default class ServiceLine extends BaseAPI {
         if (this.product_updated) {
             try {
                 response = await this.put<Starlink.Common.Content<Starlink.Management.APIResponse.ServiceLine>>(
-                    // eslint-disable-next-line @stylistic/max-len
+                    // eslint-disable-next-line max-len
                     `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/product/${this.productReferenceId}`
                 );
 

@@ -36,7 +36,6 @@ import {
 
 config();
 
-/* eslint-disable @stylistic/function-call-argument-newline */
 describe('Unit Tests', async () => {
     describe('Dishy API', async () => {
         const dishy = new Dishy(undefined, undefined, 5000);
@@ -383,4 +382,3 @@ describe('Unit Tests', async () => {
         });
     });
 });
-/* eslint-enable @stylistic/function-call-argument-newline */

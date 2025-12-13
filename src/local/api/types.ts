@@ -34,7 +34,6 @@ import type {
     WifiGetDiagnosticsResponse2_Network
 } from '../../protobuf/spacex/api/device/wifi';
 
-/* eslint-disable no-use-before-define */
 export namespace StarlinkGRPC {
     export namespace Dishy {
         export type Alerts = DishGetDiagnosticsResponse_Alerts;
@@ -72,4 +71,3 @@ export namespace StarlinkGRPC {
         export type Network = WifiGetDiagnosticsResponse2_Network;
     }
 }
-/* eslint-enable no-use-before-define */

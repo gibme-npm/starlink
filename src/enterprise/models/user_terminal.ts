@@ -70,8 +70,8 @@ export default class UserTerminal extends BaseAPI {
     public async remove_from_service_line (): Promise<boolean> {
         try {
             await this.delete(
-                `/enterprise/v1/account/${this.accountNumber}`
-                + `/user-terminals/${this.userTerminalId}/${this.serviceLineNumber}`
+                `/enterprise/v1/account/${this.accountNumber}` +
+                `/user-terminals/${this.userTerminalId}/${this.serviceLineNumber}`
             );
 
             this.userTerminal.serviceLineNumber = null;

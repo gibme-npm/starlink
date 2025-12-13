@@ -50,7 +50,6 @@ export default abstract class BaseAPI {
 
     public readonly baseUrl = 'https://web-api.starlink.com';
 
-    // eslint-disable-next-line no-useless-constructor
     constructor (
         public readonly client_id: string,
         protected readonly client_secret: string
