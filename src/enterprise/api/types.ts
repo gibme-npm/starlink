@@ -147,6 +147,27 @@ export namespace Starlink {
                 addressReferenceId: string;
             }
 
+            export interface DataProduct {
+                productId: string;
+                price: number;
+                isoCurrencyCode: string;
+                dataAmount: number;
+                dataUnit: string;
+            }
+
+            export interface Product {
+                productReferenceId: string;
+                name: string;
+                price: number;
+                isoCurrencyCode: string;
+                isSla: boolean;
+                maxNumberOfUserTerminals: number;
+                dataProducts: {
+                    topUpProduct: DataProduct;
+                    dataBlockProducts: DataProduct[];
+                };
+            }
+
             export interface RealtimeDataTracking<DateType extends Date | string = string> {
                 accountNumber: string | null;
                 billingCycles: BillingCycle<DateType>[] | null;
@@ -333,6 +354,8 @@ export namespace Starlink {
 
             export type Address = Components.AddressId;
 
+            export type Product = Components.Product;
+
             export type RealtimeDataTracking = Components.RealtimeDataTracking;
 
             export type Router = Components.Router;
@@ -463,8 +486,8 @@ export namespace Starlink {
 
             export interface IPAllocation extends Id {
                 Ipv4: string[];
-                IPv6Ue: string[];
-                IPv6Cpe: string[];
+                Ipv6Ue: string[];
+                Ipv6Cpe: string[];
             }
         }
 

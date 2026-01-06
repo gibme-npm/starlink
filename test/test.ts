@@ -205,6 +205,14 @@ describe('Unit Tests', async () => {
                 assert.notEqual(data.length, 0);
             });
 
+            it('fetch_available_products()', async function () {
+                if (!account) return this.skip();
+
+                const data = await account.fetch_available_products();
+
+                assert.notEqual(data.length, 0);
+            });
+
             it('fetch_realtime_data_tracking()', async function () {
                 if (!account) return this.skip();
 

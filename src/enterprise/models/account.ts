@@ -332,11 +332,9 @@ export default class Account extends BaseAPI {
     }
 
     /**
-     * Fetches realtime data tracking information for the service lines under this account
-     *
-     * @param options
+     * Fetches the available products for the account
      */
-    public async fetch_realtime_data_tracking (
+    public async fetch_available_products (
         options: Partial<{
             /**
              * If set to true, fetches all pages automatically
@@ -357,16 +355,76 @@ export default class Account extends BaseAPI {
              * @default 0
              */
             page: number;
+        }> = { all: true, limit: 500, page: 0 }
+    ): Promise<Starlink.Management.APIResponse.Product[]> {
+        options.limit ??= 500;
+        options.page ??= 0;
+        options.all ??= true;
+
+        let response: Starlink.Common.PagedContent<Starlink.Management.Components.Product[]>;
+
+        if (!options.all) {
+            response = await this.get(
+                `/enterprise/v1/account/${this.accountNumber}/service-lines/available-products`,
+                {
+                    ...options,
+                    pageIndex: options.page,
+                    pageLimit: options.limit
+                });
+
+            return response.content.results;
+        } else {
+            const results: Starlink.Management.APIResponse.Product[] = [];
+            let pageIndex = 0;
+
+            do {
+                response = await this.get(
+                    `/enterprise/v1/account/${this.accountNumber}/service-lines/available-products`,
+                    {
+                        ...options,
+                        pageIndex: pageIndex++,
+                        pageLimit: 500
+                    });
+
+                results.push(...response.content.results);
+            } while (!response.content.isLastPage);
+
+            if (results.length !== response.content.totalCount) {
+                throw new Error('Could not fetch all results');
+            }
+
+            return results;
+        }
+    }
+
+    /**
+     * Fetches realtime data tracking information for the service lines under this account
+     *
+     * @param options
+     */
+    public async fetch_realtime_data_tracking (
+        options: Partial<{
+            /**
+             * If set to true, fetches all pages automatically
+             * Must set to false for `limit` and `page` to be honored
+             *
+             * @default true
+             */
+            all: boolean;
+            /**
+             * The index of the page, starting at 0
+             *
+             * @default 0
+             */
+            page: number;
             previousBillingCycles: number;
             queryStartDateParam: string;
             serviceLinesFilter: string[];
         }> = {
             all: true,
-            limit: 500,
             page: 0
         }
     ): Promise<Starlink.Management.Response.RealtimeDataTracking[]> {
-        options.limit ??= 500;
         options.page ??= 0;
         options.all ??= true;
         let response: Starlink.Common.PagedContent<Starlink.Management.APIResponse.RealtimeDataTracking[]>;
@@ -376,8 +434,7 @@ export default class Account extends BaseAPI {
                 `/enterprise/v1/accounts/${this.accountNumber}/billing-cycles/query`,
                 {
                     ...options,
-                    pageIndex: options.page,
-                    pageLimit: options.limit
+                    pageIndex: options.page
                 }
             );
 
@@ -391,8 +448,7 @@ export default class Account extends BaseAPI {
                     `/enterprise/v1/accounts/${this.accountNumber}/billing-cycles/query`,
                     {
                         ...options,
-                        pageIndex: pageIndex++,
-                        pageLimit: 500
+                        pageIndex: pageIndex++
                     }
                 );
 
