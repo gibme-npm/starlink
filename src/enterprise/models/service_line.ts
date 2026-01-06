@@ -284,6 +284,10 @@ export default class ServiceLine extends BaseAPI {
         return JSON.stringify(this.serviceLine);
     }
 
+    public get object (): Starlink.Management.Response.ServiceLine {
+        return this.serviceLine;
+    }
+
     public get accountNumber (): string {
         return this.serviceLine.accountNumber;
     }

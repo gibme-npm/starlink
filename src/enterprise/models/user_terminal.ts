@@ -89,6 +89,10 @@ export default class UserTerminal extends BaseAPI {
         return JSON.stringify(this.userTerminal);
     }
 
+    public get object (): Starlink.Management.Response.UserTerminal {
+        return this.userTerminal;
+    }
+
     public get accountNumber (): string {
         return this.userTerminal.accountNumber;
     }
