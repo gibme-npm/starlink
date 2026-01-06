@@ -460,6 +460,12 @@ export namespace Starlink {
                 UplinkThroughput: number;
                 Uptime: number;
             }
+
+            export interface IPAllocation extends Id {
+                Ipv4: string[];
+                IPv6Ue: string[];
+                IPv6Cpe: string[];
+            }
         }
 
         export namespace Response {
@@ -468,6 +474,7 @@ export namespace Starlink {
                 Router: Components.Router[];
                 UserTerminal: Components.UserTerminal[];
                 UserTerminalDataUsage: any[];
+                IpAllocs: Components.IPAllocation[];
             }
         }
     }

@@ -844,7 +844,8 @@ export default class Account extends BaseAPI {
         const results: Starlink.Telemetry.Response.Data = {
             Router: [],
             UserTerminal: [],
-            UserTerminalDataUsage: []
+            UserTerminalDataUsage: [],
+            IpAllocs: []
         };
 
         for (const key of Object.keys(response.metadata.enums.DeviceType)) {
