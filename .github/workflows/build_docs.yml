@@ -9,12 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     name: Build Documentation and Push To Branch
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         name: Set up Node
         with:
-          node-version: ${{ matrix.node }}
-          registry-url: 'https://registry.npmjs.org'
+          node-version: '22'
       - name: Install Yarn
         run: npm install -g yarn
       - name: Install Protoc (Linux)

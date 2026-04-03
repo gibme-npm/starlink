@@ -14,15 +14,14 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node: ['20', '22', '24']
+        node: ['22', '24']
     name: ${{ matrix.os }} - Node ${{ matrix.node }} Test
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       name: Set up Node (NPM Cache)
       with:
         node-version: ${{ matrix.node }}
-        registry-url: 'https://registry.npmjs.org'
         cache: npm
         cache-dependency-path: package-lock.json
       if: hashFiles('package-lock.json') != ''
@@ -30,7 +29,6 @@ jobs:
       name: Set up Node (Yarn Cache)
       with:
         node-version: ${{ matrix.node }}
-        registry-url: 'https://registry.npmjs.org'
         cache: yarn
         cache-dependency-path: yarn.lock
       if: hashFiles('yarn.lock') != ''
@@ -55,8 +53,30 @@ jobs:
       run: yarn build:protobuf
     - name: Execute Unit Tests
       run: yarn test
+
+  publish:
+    needs: build
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22.22.1'  # Pin to avoid 22.22.2 npm self-upgrade bug (nodejs/node#62425)
+    - name: Update npm for OIDC support
+      run: npm install -g npm@latest
+    - name: Install Yarn
+      run: npm install -g yarn
+    - name: Install Protoc (Linux)
+      run: |
+        sudo apt update
+        sudo apt install -y protobuf-compiler
+    - name: Install Dependencies
+      run: yarn
+    - name: Generate Typescript from Protocol Buffers Definitions
+      run: yarn build:protobuf
     - name: Publish to NPM
-      if: matrix.node == '20' && matrix.os == 'ubuntu-latest' && github.event_name == 'release'
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      run: npm publish --access public
+      run: npm publish --access public --provenance

@@ -1,6 +1,6 @@
 {
   "name": "@gibme/starlink",
-  "version": "20.0.5",
+  "version": "22.0.0",
   "description": "A Package for interacting with various Starlink API(s)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -34,17 +34,17 @@
     "build:protobuf": "./node_modules/.bin/run-script-os",
     "build:protobuf:win32": "protoc --plugin=\".\\node_modules\\.bin\\protoc-gen-ts_proto\" --ts_proto_out=./src/protobuf --ts_proto_opt=\"outputServices=nice-grpc,outputServices=generic-definitions,useExactTypes=false\" --proto_path=./proto ./proto/spacex/api/device/service.proto",
     "build:protobuf:default": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./src/protobuf --ts_proto_opt=outputServices=nice-grpc,outputServices=generic-definitions,useExactTypes=false --proto_path=./proto ./proto/spacex/api/device/service.proto",
-    "test": "yarn test:style && yarn test:typecheck && yarn test:mocha",
+    "test": "yarn test:style && yarn test:typecheck && yarn test:units",
     "test:typecheck": "./node_modules/.bin/tsc --noEmit",
     "test:style": "yarn style",
-    "test:mocha": "./node_modules/.bin/cross-env NODE_ENV=production ./node_modules/.bin/mocha --exit --timeout 240000 --require ts-node/register ./test/test.ts",
+    "test:units": "node --import tsx --test --test-timeout 960000 ./test/test.ts",
     "style": "./node_modules/.bin/eslint ./src/**/*.ts ./test/**/*.ts",
     "fix-style": "./node_modules/.bin/eslint --fix ./src/**/*.ts ./test/**/*.ts",
     "fix:style": "yarn fix-style",
     "prepublishOnly": "yarn build"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "repository": {
     "type": "git",
@@ -59,35 +59,32 @@
     "email": "brandonlehmann@gmail.com"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.3",
-    "@eslint/js": "^9.39.1",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^24.10.1",
-    "@typescript-eslint/eslint-plugin": "^8.48.1",
-    "@typescript-eslint/parser": "^8.48.1",
-    "cross-env": "^10.1.0",
-    "eslint": "^9.39.1",
+    "@eslint/eslintrc": "^3.3.5",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.5.2",
+    "@typescript-eslint/eslint-plugin": "^8.58.0",
+    "@typescript-eslint/parser": "^8.58.0",
+    "eslint": "^10.1.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-n": "^17.23.1",
+    "eslint-plugin-n": "^17.24.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^7.2.1",
-    "globals": "^16.5.0",
+    "globals": "^17.4.0",
     "grpc-tools": "^1.13.1",
-    "mocha": "^11.7.5",
     "run-script-os": "^1.1.6",
-    "ts-node": "^10.9.2",
-    "ts-proto": "^2.8.3",
-    "typedoc": "^0.28.15",
-    "typescript": "^5.9.3"
+    "ts-proto": "^2.11.6",
+    "tsx": "^4.19.4",
+    "typedoc": "^0.28.18",
+    "typescript": "^6.0.2"
   },
   "dependencies": {
-    "@bufbuild/protobuf": "^2.10.2",
-    "@gibme/cache": "^20.0.3",
-    "@gibme/fetch": "^20.0.1",
+    "@bufbuild/protobuf": "^2.11.0",
+    "@gibme/cache": "^22.0.0",
+    "@gibme/fetch": "^22.0.0",
     "abort-controller": "^3.0.0",
     "nice-grpc": "^2.1.14",
-    "protobufjs": "^7.5.4",
+    "protobufjs": "^8.0.0",
     "rxjs": "^7.8.2"
   }
 }

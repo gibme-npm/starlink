@@ -22,8 +22,9 @@ import assert from 'assert';
 import { config } from 'dotenv';
 import {
     describe,
-    it
-} from 'mocha';
+    it,
+    before
+} from 'node:test';
 
 import {
     Account,
@@ -41,7 +42,7 @@ describe('Unit Tests', async () => {
         const dishy = new Dishy(undefined, undefined, 5000);
         let unreachable = false;
 
-        it('fetch_diagnostics()', async function () {
+        it('fetch_diagnostics()', { skip: false }, async (t) => {
             await dishy.fetch_diagnostics()
                 .then(data => {
                     assert.notEqual(data.id.length, 0, 'Returned ID length is 0');
@@ -57,78 +58,72 @@ describe('Unit Tests', async () => {
                 .catch(() => {
                     unreachable = true;
 
-                    return this.skip();
+                    return t.skip('Dishy unreachable');
                 });
         });
 
-        it('fetch_history()', async function () {
-            if (unreachable) return this.skip();
+        it('fetch_history()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
 
             await dishy.fetch_history()
                 .then(data => {
                     assert.notEqual(data.popPingDropRate.length, 0, 'Returned popPingDropRate.length is 0');
                     assert.notEqual(data.popPingLatencyMs.length, 0, 'Returned popPingLatencyMs.length is 0');
                 })
-                .catch(() => this.skip());
+                .catch(() => t.skip('Dishy unreachable'));
         });
 
-        it('fetch_location()', async function () {
-            if (unreachable) return this.skip();
+        it('fetch_location()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
 
             // location information may not be available based upon dishy settings
             await dishy.fetch_location()
-                .catch(() => this.skip());
+                .catch(() => t.skip('Location unavailable'));
         });
 
-        it('fetch_obstruction_map()', async function () {
-            if (unreachable) return this.skip();
+        it('fetch_obstruction_map()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
 
             // location information may not be available based upon dishy settings
             await dishy.fetch_obstruction_map()
                 .then(data => {
                     assert.notEqual(data.snr.length, 0, 'Returned data snr.length is 0');
                 })
-                .catch(() => this.skip());
+                .catch(() => t.skip('Obstruction map unavailable'));
         });
 
-        it('fetch_status()', async function () {
-            if (unreachable) return this.skip();
+        it('fetch_status()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
 
             // location information may not be available based upon dishy settings
             await dishy.fetch_status()
                 .then(data => {
                     assert.ok(data.deviceInfo);
                 })
-                .catch(() => this.skip());
+                .catch(() => t.skip('Status unavailable'));
         });
 
-        it('reboot()', async function () {
-            // We do not perform this test in CI/CD
-            this.skip();
+        it('reboot()', { skip: 'We do not perform this test in CI/CD' }, async () => {
         });
 
-        it('stow()', async function () {
-            // We do not perform this test in CI/CD
-            this.skip();
+        it('stow()', { skip: 'We do not perform this test in CI/CD' }, async () => {
         });
 
-        it('unstow()', async function () {
-            // We do not perform this test in CI/CD
-            this.skip();
+        it('unstow()', { skip: 'We do not perform this test in CI/CD' }, async () => {
         });
     });
 
     describe('WiFi Router API', async () => {
         const router = new WiFiRouter(undefined, undefined, 5000);
 
-        it('fetch_diagnostics()', async function () {
+        it('fetch_diagnostics()', { skip: false }, async (t) => {
             await router.fetch_diagnostics()
                 .then(data => {
                     assert.notEqual(data.id.length, 0, 'Returned ID length is 0');
                     assert.notEqual(data.hardwareVersion.length, 0, 'Returned HardwareVersion length is 0');
                     assert.notEqual(data.softwareVersion.length, 0, 'Returned SoftwareVersion length is 0');
                 })
-                .catch(() => this.skip());
+                .catch(() => t.skip('Router unreachable'));
         });
     });
 
@@ -138,12 +133,12 @@ describe('Unit Tests', async () => {
             process.env.CLIENT_SECRET || ''
         );
 
-        it('Fetch Accounts', async function () {
+        it('Fetch Accounts', { skip: false }, async (t) => {
             await api.fetch_accounts()
                 .then(accounts => {
                     assert.notEqual(accounts.length, 0);
                 })
-                .catch(() => this.skip());
+                .catch(() => t.skip('Enterprise API unavailable'));
         });
 
         describe('Account', async () => {
@@ -155,36 +150,28 @@ describe('Unit Tests', async () => {
                 } catch {}
             });
 
-            it('add_user_terminal()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('add_user_terminal()', { skip: 'Changes account data' }, async () => {
             });
 
-            it('check_capacity()', async function () {
-                if (!account) return this.skip();
+            it('check_capacity()', { skip: false }, async (t) => {
+                if (!account) return t.skip('No account available');
 
                 // we can't really verify the result, as Starlink capacity changes
                 await account.check_capacity(39.8097343, -98.5556199)
                     .catch(() => assert.fail());
             });
 
-            it('create_address()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('create_address()', { skip: 'Changes account data' }, async () => {
             });
 
-            it('create_router_config()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('create_router_config()', { skip: 'Changes account data' }, async () => {
             });
 
-            it('create_service_line()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('create_service_line()', { skip: 'Changes account data' }, async () => {
             });
 
-            it('fetch_address()', async function () {
-                if (!account) return this.skip();
+            it('fetch_address()', { skip: false }, async (t) => {
+                if (!account) return t.skip('No account available');
 
                 const addresses = await account.fetch_addresses();
 
@@ -197,41 +184,39 @@ describe('Unit Tests', async () => {
                 assert.deepEqual(check, address);
             });
 
-            it('fetch_addresses()', async function () {
-                if (!account) return this.skip();
+            it('fetch_addresses()', { skip: false }, async (t) => {
+                if (!account) return t.skip('No account available');
 
                 const data = await account.fetch_addresses();
 
                 assert.notEqual(data.length, 0);
             });
 
-            it('fetch_available_products()', async function () {
-                if (!account) return this.skip();
+            it('fetch_available_products()', { skip: false }, async (t) => {
+                if (!account) return t.skip('No account available');
 
                 const data = await account.fetch_available_products();
 
                 assert.notEqual(data.length, 0);
             });
 
-            it('fetch_realtime_data_tracking()', async function () {
-                if (!account) return this.skip();
+            it('fetch_realtime_data_tracking()', { skip: false }, async (t) => {
+                if (!account) return t.skip('No account available');
 
                 const data = await account.fetch_realtime_data_tracking();
 
                 assert.notEqual(data.length, 0);
             });
 
-            it('fetch_router()', async function () {
-                // we don't know a router to fetch
-                this.skip();
+            it('fetch_router()', { skip: 'We don\'t know a router to fetch' }, async () => {
             });
 
-            it('fetch_router_config()', async function () {
-                if (!account) return this.skip();
+            it('fetch_router_config()', { skip: false }, async (t) => {
+                if (!account) return t.skip('No account available');
 
                 const configs = await account.fetch_router_configs();
 
-                if (configs.length === 0) return this.skip();
+                if (configs.length === 0) return t.skip('No router configs available');
 
                 const config = configs[0];
 
@@ -240,16 +225,16 @@ describe('Unit Tests', async () => {
                 assert.deepEqual(check, config);
             });
 
-            it('fetch_router_configs()', async function () {
-                if (!account) return this.skip();
+            it('fetch_router_configs()', { skip: false }, async (t) => {
+                if (!account) return t.skip('No account available');
 
                 const data = await account.fetch_router_configs();
 
                 assert.notEqual(data.length, 0);
             });
 
-            it('fetch_service_line()', async function () {
-                if (!account) return this.skip();
+            it('fetch_service_line()', { skip: false }, async (t) => {
+                if (!account) return t.skip('No account available');
 
                 const service_lines = await account.fetch_service_lines();
 
@@ -262,67 +247,53 @@ describe('Unit Tests', async () => {
                 assert.deepEqual(check, service_line);
             });
 
-            it('fetch_service_lines()', async function () {
-                if (!account) return this.skip();
+            it('fetch_service_lines()', { skip: false }, async (t) => {
+                if (!account) return t.skip('No account available');
 
                 const data = await account.fetch_service_lines();
 
                 assert.notEqual(data.length, 0);
             });
 
-            it('fetch_user_terminals()', async function () {
-                if (!account) return this.skip();
+            it('fetch_user_terminals()', { skip: false }, async (t) => {
+                if (!account) return t.skip('No account available');
 
                 // there is no guarantee that we'll have any terminals
                 await account.fetch_user_terminals()
                     .catch(() => assert.fail());
             });
 
-            it('remove_service_line()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('remove_service_line()', { skip: 'Changes account data' }, async () => {
             });
 
-            it('remove_user_terminal()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('remove_user_terminal()', { skip: 'Changes account data' }, async () => {
             });
 
-            it('telemetry()', async function () {
-                if (!account) return this.skip();
+            it('telemetry()', { skip: false }, async (t) => {
+                if (!account) return t.skip('No account available');
 
                 // There is no guarantee that we will have any telemetry data
                 await account.telemetry()
                     .catch(() => assert.fail());
             });
 
-            it('update_address()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('update_address()', { skip: 'Changes account data' }, async () => {
             });
 
-            it('update_default_router_config()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('update_default_router_config()', { skip: 'Changes account data' }, async () => {
             });
         });
 
         describe('Routers', async () => {
-            it('assign_config()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('assign_config()', { skip: 'Changes account data' }, async () => {
             });
 
-            it('remove_config()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('remove_config()', { skip: 'Changes account data' }, async () => {
             });
         });
 
         describe('Router Config', async () => {
-            it('save()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('save()', { skip: 'Changes account data' }, async () => {
             });
         });
 
@@ -337,55 +308,41 @@ describe('Unit Tests', async () => {
                 } catch {}
             });
 
-            it('add_terminal()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('add_terminal()', { skip: 'Changes account data' }, async () => {
             });
 
-            it('fetch_daily_usage()', async function () {
-                if (!serviceLine) return this.skip();
+            it('fetch_daily_usage()', { skip: false }, async (t) => {
+                if (!serviceLine) return t.skip('No service line available');
 
                 await serviceLine.fetch_daily_usage()
                     .catch(() => assert.fail());
             });
 
-            it('fetch_partial_periods()', async function () {
-                if (!serviceLine) return this.skip();
+            it('fetch_partial_periods()', { skip: false }, async (t) => {
+                if (!serviceLine) return t.skip('No service line available');
 
                 await serviceLine.fetch_partial_periods()
                     .catch(() => assert.fail());
             });
 
-            it('opt_in()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('opt_in()', { skip: 'Changes account data' }, async () => {
             });
 
-            it('opt_out()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('opt_out()', { skip: 'Changes account data' }, async () => {
             });
 
-            it('remove_terminal()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('remove_terminal()', { skip: 'Changes account data' }, async () => {
             });
 
-            it('save()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('save()', { skip: 'Changes account data' }, async () => {
             });
         });
 
         describe('User Terminal', async () => {
-            it('add_to_service_line()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('add_to_service_line()', { skip: 'Changes account data' }, async () => {
             });
 
-            it('remove_from_service_line()', async function () {
-                // We do not perform this test as it changes account data
-                this.skip();
+            it('remove_from_service_line()', { skip: 'Changes account data' }, async () => {
             });
         });
     });
