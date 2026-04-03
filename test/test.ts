@@ -21,9 +21,10 @@
 import assert from 'assert';
 import { config } from 'dotenv';
 import {
+    after,
+    before,
     describe,
-    it,
-    before
+    it
 } from 'node:test';
 
 import {
@@ -38,9 +39,17 @@ import {
 config();
 
 describe('Unit Tests', async () => {
+    after(async () => {
+        await StarlinkAPI.disconnect();
+    });
+
     describe('Dishy API', async () => {
         const dishy = new Dishy(undefined, undefined, 5000);
         let unreachable = false;
+
+        after(() => {
+            dishy.close();
+        });
 
         it('fetch_diagnostics()', { skip: false }, async (t) => {
             await dishy.fetch_diagnostics()
@@ -115,6 +124,10 @@ describe('Unit Tests', async () => {
 
     describe('WiFi Router API', async () => {
         const router = new WiFiRouter(undefined, undefined, 5000);
+
+        after(() => {
+            router.close();
+        });
 
         it('fetch_diagnostics()', { skip: false }, async (t) => {
             await router.fetch_diagnostics()

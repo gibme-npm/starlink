@@ -20,6 +20,7 @@
 
 import AbortController from 'abort-controller';
 import {
+    Channel,
     createChannel,
     createClient
 } from 'nice-grpc';
@@ -37,18 +38,26 @@ import type {
 
 export default abstract class GRPCApi {
     protected client: DeviceClient;
+    private readonly channel: Channel;
 
     protected constructor (
         public readonly host: string,
         public readonly port: number,
         public readonly timeout?: number
     ) {
-        const channel = createChannel(`${host}:${port}`);
+        this.channel = createChannel(`${host}:${port}`);
 
         this.client = createClient(
             DeviceDefinition,
-            channel
+            this.channel
         );
+    }
+
+    /**
+     * Closes the underlying gRPC channel and releases resources
+     */
+    public close (): void {
+        this.channel.close();
     }
 
     /**

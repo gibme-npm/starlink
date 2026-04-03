@@ -56,6 +56,13 @@ export default abstract class BaseAPI {
     ) {}
 
     /**
+     * Disconnects the internal rate-limit cache and releases its resources
+     */
+    public static async disconnect (): Promise<void> {
+        await BaseAPI.cache.disconnect();
+    }
+
+    /**
      * Attempts to authenticate with the Starlink Enterprise API
      * If it succeeds, the token is stored internally for later use
      *
