@@ -20,7 +20,9 @@ message DishGetContextResponse {
 	optional .SpaceX.API.Device.DeviceInfo device_info = 1 [json_name="deviceInfo"];
 	optional .SpaceX.API.Device.DeviceState device_state = 7 [json_name="deviceState"];
 	optional float obstruction_fraction = 2 [json_name="obstructionFraction"];
+	optional float obstruction_time = 20 [json_name="obstructionTime"];
 	optional float obstruction_valid_s = 3 [json_name="obstructionValidS"];
+	optional bool obstruction_current = 12 [json_name="obstructionCurrent"];
 	optional uint32 cell_id = 4 [json_name="cellId"];
 	optional uint32 pop_rack_id = 5 [json_name="popRackId"];
 	optional uint32 initial_satellite_id = 8 [json_name="initialSatelliteId"];
@@ -292,4 +294,187 @@ message DishGetDiagnosticsResponse
 	}
 
 	repeated TestResultCode hardware_self_test_codes = 11;
+}
+
+message DishConfig {
+	enum SnowMeltMode {
+		AUTO = 0;
+		ALWAYS_ON = 1;
+		ALWAYS_OFF = 2;
+	}
+	enum LocationRequestMode {
+		NONE = 0;
+		LOCAL = 1;
+	}
+	enum LevelDishMode {
+		TILT_LIKE_NORMAL = 0;
+		FORCE_LEVEL = 1;
+	}
+	optional .SpaceX.API.Device.DishConfig.SnowMeltMode snow_melt_mode = 1 [json_name="snowMeltMode"];
+	optional bool apply_snow_melt_mode = 1001 [json_name="applySnowMeltMode"];
+	optional .SpaceX.API.Device.DishConfig.LocationRequestMode location_request_mode = 2 [json_name="locationRequestMode"];
+	optional bool apply_location_request_mode = 2001 [json_name="applyLocationRequestMode"];
+	optional .SpaceX.API.Device.DishConfig.LevelDishMode level_dish_mode = 3 [json_name="levelDishMode"];
+	optional bool apply_level_dish_mode = 3001 [json_name="applyLevelDishMode"];
+	optional uint32 power_save_start_minutes = 4 [json_name="powerSaveStartMinutes"];
+	optional bool apply_power_save_start_minutes = 4001 [json_name="applyPowerSaveStartMinutes"];
+	optional uint32 power_save_duration_minutes = 5 [json_name="powerSaveDurationMinutes"];
+	optional bool apply_power_save_duration_minutes = 5001 [json_name="applyPowerSaveDurationMinutes"];
+	optional bool power_save_mode = 6 [json_name="powerSaveMode"];
+	optional bool apply_power_save_mode = 6001 [json_name="applyPowerSaveMode"];
+	optional uint32 swupdate_reboot_hour = 9 [json_name="swupdateRebootHour"];
+	optional bool apply_swupdate_reboot_hour = 9001 [json_name="applySwupdateRebootHour"];
+	optional bool swupdate_three_day_deferral_enabled = 7 [json_name="swupdateThreeDayDeferralEnabled"];
+	optional bool apply_swupdate_three_day_deferral_enabled = 7001 [json_name="applySwupdateThreeDayDeferralEnabled"];
+	optional uint32 asset_class = 8 [json_name="assetClass"];
+	optional bool apply_asset_class = 8001 [json_name="applyAssetClass"];
+}
+
+message RssiEntry {
+	optional double theta_degree = 1 [json_name="thetaDegree"];
+	optional double phi_degree = 2 [json_name="phiDegree"];
+	optional double rssi_dbf = 3 [json_name="rssiDbf"];
+	optional uint64 scan_timestamp_ms = 4 [json_name="scanTimestampMs"];
+}
+
+message DishSetConfigRequest {
+	optional .SpaceX.API.Device.DishConfig dish_config = 1 [json_name="dishConfig"];
+}
+
+message DishSetConfigResponse {
+	optional .SpaceX.API.Device.DishConfig updated_dish_config = 1 [json_name="updatedDishConfig"];
+	optional string error = 2 [json_name="error"];
+}
+
+message DishGetConfigRequest {
+}
+
+message DishGetConfigResponse {
+	optional .SpaceX.API.Device.DishConfig dish_config = 1 [json_name="dishConfig"];
+}
+
+message DishGetEmcRequest {
+}
+
+message DishGetEmcResponse {
+	optional string uuid = 2 [json_name="uuid"];
+	optional uint64 timestamp = 3 [json_name="timestamp"];
+	optional uint32 cplane_updates = 11 [json_name="cplaneUpdates"];
+	optional double gps_latitude = 16 [json_name="gpsLatitude"];
+	optional double gps_longitude = 17 [json_name="gpsLongitude"];
+	optional double gps_pdop = 18 [json_name="gpsPdop"];
+	optional uint32 rf_mode = 19 [json_name="rfMode"];
+	optional double phi = 20 [json_name="phi"];
+	optional double theta = 21 [json_name="theta"];
+	optional uint32 rx_channel = 22 [json_name="rxChannel"];
+	optional uint32 tx_channel = 23 [json_name="txChannel"];
+	optional float t_dbf_max = 24 [json_name="tDbfMax"];
+	optional double t_center = 25 [json_name="tCenter"];
+	optional bool auto_power_snow_melt_enabled = 30 [json_name="autoPowerSnowMeltEnabled"];
+	optional double voltage = 32 [json_name="voltage"];
+	optional uint32 rx_beam_state = 33 [json_name="rxBeamState"];
+	optional uint32 tx_beam_state = 34 [json_name="txBeamState"];
+	optional uint32 half_duplex_state = 35 [json_name="halfDuplexState"];
+	optional bool manual_tilt_enabled = 36 [json_name="manualTiltEnabled"];
+	optional double tilt_angle = 37 [json_name="tiltAngle"];
+	optional uint32 pll_tx_lock_detected = 38 [json_name="pllTxLockDetected"];
+	optional bool eirp_exceeded_threshold = 39 [json_name="eirpExceededThreshold"];
+	optional bool idle_override_enabled = 41 [json_name="idleOverrideEnabled"];
+	optional bool theta_override_enabled = 42 [json_name="thetaOverrideEnabled"];
+	optional double theta_override_value = 43 [json_name="thetaOverrideValue"];
+	optional bool phi_override_enabled = 44 [json_name="phiOverrideEnabled"];
+	optional double phi_override_value = 45 [json_name="phiOverrideValue"];
+	optional uint32 rx_chan_override_value = 46 [json_name="rxChanOverrideValue"];
+	optional uint32 tx_chan_override_value = 47 [json_name="txChanOverrideValue"];
+	optional bool sky_search_override_enabled = 48 [json_name="skySearchOverrideEnabled"];
+	optional bool fast_switching_enabled = 49 [json_name="fastSwitchingEnabled"];
+	optional uint32 modulation_override_value = 50 [json_name="modulationOverrideValue"];
+	optional bool force_eirp_failure = 51 [json_name="forceEirpFailure"];
+	optional bool force_pll_unlock = 52 [json_name="forcePllUnlock"];
+	optional uint32 ut_ine_success = 53 [json_name="utIneSuccess"];
+	optional bool rf_ready = 54 [json_name="rfReady"];
+	optional bool tilt_to_stowed = 55 [json_name="tiltToStowed"];
+	optional bool reboot = 56 [json_name="reboot"];
+	optional bool continuous_motor_test = 57 [json_name="continuousMotorTest"];
+	optional double distance_override_meters = 58 [json_name="distanceOverrideMeters"];
+	optional uint32 country_code_override = 62 [json_name="countryCodeOverride"];
+	optional double max_pointing_distance = 63 [json_name="maxPointingDistance"];
+	optional double distance_scaling_factor = 64 [json_name="distanceScalingFactor"];
+	optional int32 tx_duty_cycle_override = 65 [json_name="txDutyCycleOverride"];
+	optional int32 rx_duty_cycle_override = 66 [json_name="rxDutyCycleOverride"];
+	optional float tx_time_ms = 67 [json_name="txTimeMs"];
+	optional float rx_time_ms = 68 [json_name="rxTimeMs"];
+	optional double eirp_legal_limit_dbw = 69 [json_name="eirpLegalLimitDbw"];
+	optional double eirp_legal_limit_dbw_override = 70 [json_name="eirpLegalLimitDbwOverride"];
+	optional double eirp_adjustment_db = 71 [json_name="eirpAdjustmentDb"];
+	optional double eirp_predicted_dbw = 72 [json_name="eirpPredictedDbw"];
+}
+
+message DishPowerSaveRequest {
+	optional uint32 power_save_start_minutes = 1 [json_name="powerSaveStartMinutes"];
+	optional uint32 power_save_duration_minutes = 2 [json_name="powerSaveDurationMinutes"];
+	optional bool enable_power_save = 3 [json_name="enablePowerSave"];
+}
+
+message DishInhibitGpsRequest {
+	optional bool inhibit_gps = 1 [json_name="inhibitGps"];
+}
+
+message DishInhibitGpsResponse {
+	optional bool inhibit_gps = 1 [json_name="inhibitGps"];
+}
+
+message DishInhibitRfRequest {
+	optional bool inhibit_rf = 1 [json_name="inhibitRf"];
+}
+
+message DishInhibitRfResponse {
+	optional bool inhibit_rf = 1 [json_name="inhibitRf"];
+}
+
+message DishClearObstructionMapRequest {
+}
+
+message DishClearObstructionMapResponse {
+}
+
+message DishFactoryResetRequest {
+	optional bool app_reset = 1 [json_name="appReset"];
+}
+
+message DishFactoryResetResponse {
+}
+
+message ResetButtonRequest {
+	optional bool pressed = 1 [json_name="pressed"];
+}
+
+message ResetButtonResponse {
+}
+
+message DishActivateRssiScan {
+	optional uint32 channel = 1 [json_name="channel"];
+}
+
+message DishGetRssiScanResult {
+	optional bool success = 1 [json_name="success"];
+	optional uint32 channel = 2 [json_name="channel"];
+	optional uint64 request_timestamp = 3 [json_name="requestTimestamp"];
+	optional uint32 number_samples = 4 [json_name="numberSamples"];
+	repeated .SpaceX.API.Device.RssiEntry rssi_scan_points = 5 [json_name="rssiScanPoints"];
+}
+
+message DishActivateRssiScanRequest {
+	optional .SpaceX.API.Device.DishActivateRssiScan scan_query = 1 [json_name="scanQuery"];
+}
+
+message DishActivateRssiScanResponse {
+	optional bool success = 1 [json_name="success"];
+}
+
+message DishGetRssiScanResultRequest {
+}
+
+message DishGetRssiScanResultResponse {
+	optional .SpaceX.API.Device.DishGetRssiScanResult result = 1 [json_name="result"];
 }

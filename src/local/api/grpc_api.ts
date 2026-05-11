@@ -92,6 +92,37 @@ export default abstract class GRPCApi {
 
         return response;
     }
+
+    /**
+     * Sends `request` and returns `response[field]`, throwing if the named response
+     * variant is absent. `noun` is interpolated into the error message
+     */
+    protected async fetch_or_throw<K extends keyof Response> (
+        request: DeepPartial<Request>,
+        field: K,
+        noun: string
+    ): Promise<NonNullable<Response[K]>> {
+        const response = await this.handle(request);
+
+        if (!response[field]) {
+            throw new Error(`No ${noun} returned from ${this.host}:${this.port}`);
+        }
+
+        return response[field] as NonNullable<Response[K]>;
+    }
+
+    /**
+     * Sends `request` and returns true on success, false on any thrown error
+     */
+    protected async try_handle (request: DeepPartial<Request>): Promise<boolean> {
+        try {
+            await this.handle(request);
+
+            return true;
+        } catch {
+            return false;
+        }
+    }
 }
 
 export {

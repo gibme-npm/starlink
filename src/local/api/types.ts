@@ -18,25 +18,66 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import type { GetLocationResponse } from '../../protobuf/spacex/api/device/device';
 import type {
+    GetConnectionsResponse,
+    GetDeviceInfoResponse,
+    GetGnssMeasurementResponse,
+    GetLocationResponse,
+    GetLogResponse,
+    GetNetworkInterfacesResponse,
+    GetPingResponse,
+    GetRadioStatsResponse,
+    GetTimeResponse,
+    PingHostResponse,
+    RunIperfServerResponse,
+    SpeedTestResponse,
+    SpeedtestStatus
+} from '../../protobuf/spacex/api/device/device';
+import type {
+    TransceiverGetStatusResponse,
+    TransceiverGetTelemetryResponse,
+    TransceiverIFLoopbackTestResponse
+} from '../../protobuf/spacex/api/device/transceiver';
+import type {
+    DishGetConfigResponse,
+    DishGetContextResponse,
     DishGetDiagnosticsResponse,
     DishGetDiagnosticsResponse_Alerts,
     DishGetDiagnosticsResponse_DisablementCode,
     DishGetDiagnosticsResponse_Location,
     DishGetDiagnosticsResponse_TestResult,
+    DishGetEmcResponse,
     DishGetHistoryResponse,
     DishGetObstructionMapResponse,
+    DishGetRssiScanResultResponse,
     DishGetStatusResponse
 } from '../../protobuf/spacex/api/device/dish';
 import type {
+    WifiBackhaulStatsResponse,
+    WifiGetClientHistoryResponse,
+    WifiGetClientsResponse,
+    WifiGetConfigResponse,
     WifiGetDiagnosticsResponse2,
-    WifiGetDiagnosticsResponse2_Network
+    WifiGetDiagnosticsResponse2_Network,
+    WifiGetFirewallResponse,
+    WifiGetHistoryResponse,
+    WifiGetPingMetricsResponse,
+    WifiGetStatusResponse,
+    WifiGuestInfoResponse,
+    WifiSelfTestResponse
 } from '../../protobuf/spacex/api/device/wifi';
 
 export namespace StarlinkGRPC {
     export namespace Dishy {
         export type Alerts = DishGetDiagnosticsResponse_Alerts;
+
+        export type Config = DishGetConfigResponse;
+
+        export type Connections = GetConnectionsResponse;
+
+        export type Context = DishGetContextResponse;
+
+        export type DeviceInfo = GetDeviceInfoResponse;
 
         export type DiagLocation = DishGetDiagnosticsResponse_Location;
 
@@ -52,22 +93,72 @@ export namespace StarlinkGRPC {
 
         export type DisablementCode = DishGetDiagnosticsResponse_DisablementCode;
 
+        export type EmcStatus = DishGetEmcResponse;
+
+        export type GnssMeasurement = GetGnssMeasurementResponse;
+
         export type HardwareTestResult = DishGetDiagnosticsResponse_TestResult;
 
         export type History = DishGetHistoryResponse;
 
+        export type IperfServer = RunIperfServerResponse;
+
+        export type Logs = GetLogResponse;
+
         export type Location = GetLocationResponse;
+
+        export type NetworkInterfaces = GetNetworkInterfacesResponse;
 
         export type ObstructionMap = DishGetObstructionMapResponse;
 
+        export type Ping = GetPingResponse;
+
+        export type PingHost = PingHostResponse;
+
+        export type RadioStats = GetRadioStatsResponse;
+
+        export type RssiScanResult = DishGetRssiScanResultResponse;
+
+        export type SpeedTest = SpeedTestResponse;
+
+        export type SpeedtestStatusInfo = SpeedtestStatus;
+
         export type Status = DishGetStatusResponse;
+
+        export type Time = GetTimeResponse;
+
+        export type TransceiverLoopback = TransceiverIFLoopbackTestResponse;
+
+        export type TransceiverStatus = TransceiverGetStatusResponse;
+
+        export type TransceiverTelemetry = TransceiverGetTelemetryResponse;
     }
 
     export namespace WifiRouter {
+        export type BackhaulStats = WifiBackhaulStatsResponse;
+
+        export type ClientHistory = WifiGetClientHistoryResponse;
+
+        export type Clients = WifiGetClientsResponse;
+
+        export type Config = WifiGetConfigResponse;
+
         export interface Diagnostics extends Omit<WifiGetDiagnosticsResponse2, 'networks'> {
             networks: Network[];
         }
 
+        export type Firewall = WifiGetFirewallResponse;
+
+        export type GuestInfo = WifiGuestInfoResponse;
+
+        export type History = WifiGetHistoryResponse;
+
         export type Network = WifiGetDiagnosticsResponse2_Network;
+
+        export type PingMetrics = WifiGetPingMetricsResponse;
+
+        export type SelfTest = WifiSelfTestResponse;
+
+        export type Status = WifiGetStatusResponse;
     }
 }

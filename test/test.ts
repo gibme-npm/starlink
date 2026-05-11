@@ -20,6 +20,7 @@
 
 import assert from 'assert';
 import { config } from 'dotenv';
+import { ClientError, Status } from 'nice-grpc';
 import {
     after,
     before,
@@ -46,6 +47,15 @@ describe('Unit Tests', async () => {
     describe('Dishy API', async () => {
         const dishy = new Dishy(undefined, undefined, 5000);
         let unreachable = false;
+
+        const classifySkip = (err: unknown): string => {
+            if (err instanceof ClientError) {
+                if (err.code === Status.UNIMPLEMENTED) return 'not implemented on this firmware';
+                if (err.code === Status.PERMISSION_DENIED) return 'permission denied (needs signed wrapper)';
+            }
+
+            return 'dishy method unavailable';
+        };
 
         after(() => {
             dishy.close();
@@ -79,7 +89,7 @@ describe('Unit Tests', async () => {
                     assert.notEqual(data.popPingDropRate.length, 0, 'Returned popPingDropRate.length is 0');
                     assert.notEqual(data.popPingLatencyMs.length, 0, 'Returned popPingLatencyMs.length is 0');
                 })
-                .catch(() => t.skip('Dishy unreachable'));
+                .catch(err => t.skip(classifySkip(err)));
         });
 
         it('fetch_location()', { skip: false }, async (t) => {
@@ -87,7 +97,7 @@ describe('Unit Tests', async () => {
 
             // location information may not be available based upon dishy settings
             await dishy.fetch_location()
-                .catch(() => t.skip('Location unavailable'));
+                .catch(err => t.skip(classifySkip(err)));
         });
 
         it('fetch_obstruction_map()', { skip: false }, async (t) => {
@@ -98,7 +108,7 @@ describe('Unit Tests', async () => {
                 .then(data => {
                     assert.notEqual(data.snr.length, 0, 'Returned data snr.length is 0');
                 })
-                .catch(() => t.skip('Obstruction map unavailable'));
+                .catch(err => t.skip(classifySkip(err)));
         });
 
         it('fetch_status()', { skip: false }, async (t) => {
@@ -109,7 +119,143 @@ describe('Unit Tests', async () => {
                 .then(data => {
                     assert.ok(data.deviceInfo);
                 })
-                .catch(() => t.skip('Status unavailable'));
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_config()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_config()
+                .then(data => {
+                    assert.ok(data.dishConfig, 'No dishConfig returned');
+                })
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_context()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_context()
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_emc()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_emc()
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_rssi_scan_result()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_rssi_scan_result()
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_speedtest_status()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_speedtest_status()
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_device_info()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_device_info()
+                .then(data => {
+                    assert.ok(data.deviceInfo, 'No deviceInfo returned');
+                })
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_time()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_time()
+                .then(data => {
+                    assert.ok(data.unixNano && data.unixNano > 0, 'Returned unixNano is not positive');
+                })
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_network_interfaces()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_network_interfaces()
+                .then(data => {
+                    assert.ok(Array.isArray(data.networkInterfaces), 'networkInterfaces is not an array');
+                })
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_connections()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_connections()
+                .then(data => {
+                    assert.ok(Array.isArray(data.services), 'services is not an array');
+                })
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_ping()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_ping()
+                .then(data => {
+                    assert.ok(Array.isArray(data.results), 'ping results is not an array');
+                })
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_radio_stats()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_radio_stats()
+                .then(data => {
+                    assert.ok(Array.isArray(data.radioStats), 'radioStats is not an array');
+                })
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('ping_host()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.ping_host('1.1.1.1')
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_log()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_log()
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_gnss_measurement()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_gnss_measurement()
+                .then(data => {
+                    assert.ok(Array.isArray(data.measurements), 'measurements is not an array');
+                })
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_transceiver_status()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_transceiver_status()
+                .catch(err => t.skip(classifySkip(err)));
+        });
+
+        it('fetch_transceiver_telemetry()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Dishy unreachable');
+
+            await dishy.fetch_transceiver_telemetry()
+                .catch(err => t.skip(classifySkip(err)));
         });
 
         it('reboot()', { skip: 'We do not perform this test in CI/CD' }, async () => {
@@ -120,10 +266,62 @@ describe('Unit Tests', async () => {
 
         it('unstow()', { skip: 'We do not perform this test in CI/CD' }, async () => {
         });
+
+        it('factory_reset()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('set_config()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('power_save()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('inhibit_gps()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('inhibit_rf()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('clear_obstruction_map()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('start_speedtest()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('run_transceiver_if_loopback_test()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('speed_test()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('run_iperf_server()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('tcp_connectivity_test()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('udp_connectivity_test()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('report_client_speedtest()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('activate_rssi_scan()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('press_reset_button()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('restart_control()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('update()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
     });
 
     describe('WiFi Router API', async () => {
         const router = new WiFiRouter(undefined, undefined, 5000);
+        let unreachable = false;
 
         after(() => {
             router.close();
@@ -136,7 +334,54 @@ describe('Unit Tests', async () => {
                     assert.notEqual(data.hardwareVersion.length, 0, 'Returned HardwareVersion length is 0');
                     assert.notEqual(data.softwareVersion.length, 0, 'Returned SoftwareVersion length is 0');
                 })
-                .catch(() => t.skip('Router unreachable'));
+                .catch(() => {
+                    unreachable = true;
+
+                    return t.skip('Router unreachable');
+                });
+        });
+
+        it('fetch_clients()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Router unreachable');
+
+            await router.fetch_clients()
+                .then(data => {
+                    assert.ok(Array.isArray(data.clients), 'clients is not an array');
+                })
+                .catch(() => t.skip('Clients unavailable'));
+        });
+
+        it('fetch_config()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Router unreachable');
+
+            await router.fetch_config()
+                .then(data => {
+                    assert.ok(data.wifiConfig, 'No wifiConfig returned');
+                })
+                .catch(() => t.skip('Config unavailable'));
+        });
+
+        it('fetch_ping_metrics()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Router unreachable');
+
+            await router.fetch_ping_metrics()
+                .catch(() => t.skip('Ping metrics unavailable'));
+        });
+
+        it('fetch_status()', { skip: false }, async (t) => {
+            if (unreachable) return t.skip('Router unreachable');
+
+            await router.fetch_status()
+                .then(data => {
+                    assert.ok(data.deviceInfo, 'No deviceInfo returned');
+                })
+                .catch(() => t.skip('Status unavailable'));
+        });
+
+        it('set_config()', { skip: 'We do not perform this test in CI/CD' }, async () => {
+        });
+
+        it('setup()', { skip: 'We do not perform this test in CI/CD' }, async () => {
         });
     });
 

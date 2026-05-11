@@ -37,4 +37,10 @@ message WifiConfig {
 		WPA3 = 2;
 		WPA2WPA3 = 3;
 	}
+	enum Band {
+		RF_UNKNOWN = 0;
+		RF_2GHZ = 2;
+		RF_5GHZ = 5;
+		RF_5GHZ_HIGH = 6;
+	}
 }
