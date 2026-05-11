@@ -18,12 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import GRPCApi from './api/grpc_api';
+import { GRPCApi } from './api/grpc_api';
 import { StarlinkGRPC } from './api/types';
 import { RouterRole } from '../protobuf/spacex/api/device/device';
 import type { WifiConfig } from '../protobuf/spacex/api/device/wifi_config';
 import type { ClientConfig, ClientName, MeshConfig } from '../protobuf/spacex/api/device/wifi';
-export { RouterRole, StarlinkGRPC };
+export { GRPCApi, RouterRole, StarlinkGRPC };
 export type { WifiConfig, ClientConfig, ClientName, MeshConfig };
 
 // The device-level requests `getHistory` and `getStatus` are multiplexed across
@@ -32,16 +32,8 @@ export type { WifiConfig, ClientConfig, ClientName, MeshConfig };
 // That is why the request key and the response key here do not match.
 
 export default class WiFiRouter extends GRPCApi {
-    constructor (
-        host = '192.168.1.1',
-        port = 9000,
-        timeout?: number
-    ) {
-        super(
-            host,
-            port,
-            timeout
-        );
+    constructor ({ host = '192.168.1.1', port = 9000, ...rest }: GRPCApi.Options = {}) {
+        super({ host, port, ...rest });
     }
 
     /**

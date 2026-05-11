@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import GRPCApi from './api/grpc_api';
+import { GRPCApi } from './api/grpc_api';
 import { StarlinkGRPC } from './api/types';
 import {
     PositionSource,
@@ -27,6 +27,7 @@ import {
 import type { SpeedTestStats } from '../protobuf/spacex/api/device/device';
 import type { DishConfig, DishActivateRssiScan } from '../protobuf/spacex/api/device/dish';
 export {
+    GRPCApi,
     PositionSource,
     UdpConnectivityTestRequest_UDPProbeDataType as UDPProbeDataType,
     StarlinkGRPC
@@ -34,16 +35,8 @@ export {
 export type { SpeedTestStats, DishConfig, DishActivateRssiScan };
 
 export default class Dishy extends GRPCApi {
-    constructor (
-        host = '192.168.100.1',
-        port = 9200,
-        timeout?: number
-    ) {
-        super(
-            host,
-            port,
-            timeout
-        );
+    constructor ({ host = '192.168.100.1', port = 9200, ...rest }: GRPCApi.Options = {}) {
+        super({ host, port, ...rest });
     }
 
     /**

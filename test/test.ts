@@ -44,8 +44,56 @@ describe('Unit Tests', async () => {
         await StarlinkAPI.disconnect();
     });
 
+    describe('Local gRPC client construction', async () => {
+        it('constructs Dishy with TLS + custom headers and closes cleanly', () => {
+            const dishy = new Dishy({
+                host: '127.0.0.1',
+                port: 1,
+                timeout: 250,
+                tls: true,
+                headers: { 'x-api-key': 'smoke-test' }
+            });
+
+            try {
+                assert.strictEqual(dishy.host, '127.0.0.1');
+                assert.strictEqual(dishy.port, 1);
+                assert.strictEqual(dishy.timeout, 250);
+            } finally {
+                dishy.close();
+            }
+        });
+
+        it('constructs WiFiRouter with TLS object + rejectUnauthorized=false', () => {
+            const router = new WiFiRouter({
+                host: '127.0.0.1',
+                port: 1,
+                timeout: 250,
+                tls: { rejectUnauthorized: false },
+                headers: { 'x-api-key': 'smoke-test' }
+            });
+
+            try {
+                assert.strictEqual(router.host, '127.0.0.1');
+                assert.strictEqual(router.port, 1);
+            } finally {
+                router.close();
+            }
+        });
+
+        it('preserves the plaintext default when tls is omitted', () => {
+            const dishy = new Dishy();
+
+            try {
+                assert.strictEqual(dishy.host, '192.168.100.1');
+                assert.strictEqual(dishy.port, 9200);
+            } finally {
+                dishy.close();
+            }
+        });
+    });
+
     describe('Dishy API', async () => {
-        const dishy = new Dishy(undefined, undefined, 5000);
+        const dishy = new Dishy({ timeout: 5000 });
         let unreachable = false;
 
         const classifySkip = (err: unknown): string => {
@@ -320,7 +368,7 @@ describe('Unit Tests', async () => {
     });
 
     describe('WiFi Router API', async () => {
-        const router = new WiFiRouter(undefined, undefined, 5000);
+        const router = new WiFiRouter({ timeout: 5000 });
         let unreachable = false;
 
         after(() => {

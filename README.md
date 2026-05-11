@@ -106,6 +106,40 @@ const diagnostics = await router.fetch_diagnostics();
 console.log(diagnostics);
 ```
 
+### Reaching a local device through a reverse proxy (HTTPS + API key)
+
+Both `Dishy` and `WiFiRouter` take a single options object. Supply `tls` to talk to a TLS-terminating reverse proxy, and `headers` to attach any extra headers (e.g., an API key) to every gRPC call:
+
+```typescript
+import { Dishy } from '@gibme/starlink/dishy';
+
+const dishy = new Dishy({
+    host: 'dishy.example.com',
+    port: 443,
+    timeout: 5000,
+    tls: true,
+    headers: { 'x-api-key': process.env.DISHY_API_KEY! }
+});
+```
+
+`tls: true` uses the system trust store with strict hostname verification. For private CAs or self-signed development proxies, pass an object instead:
+
+```typescript
+import { readFileSync } from 'node:fs';
+
+const dishy = new Dishy({
+    host: 'dishy.lan',
+    port: 9443,
+    tls: {
+        rootCerts: readFileSync('/etc/ssl/private-ca.pem'),
+        rejectUnauthorized: true
+    },
+    headers: { 'x-api-key': 'secret' }
+});
+```
+
+Setting `rejectUnauthorized: false` skips certificate verification entirely; only use that for trusted local development environments.
+
 ### Enterprise API
 
 ```typescript
