@@ -40,8 +40,8 @@ export default class Router extends BaseAPI {
     public async assign_config (configId: string): Promise<boolean> {
         try {
             await this.put(
-                `/enterprise/v1/account/${this.accountNumber}/routers/${this.routerId}/config`,
-                configId
+                '/v2/routers/configs/assign',
+                [{ routerId: this.routerId, configId }]
             );
 
             this.router.configId = configId;
@@ -57,9 +57,12 @@ export default class Router extends BaseAPI {
      */
     public async remove_config (): Promise<boolean> {
         try {
-            await this.delete(
-                `/enterprise/v1/account/${this.accountNumber}/routers/${this.routerId}/config`
+            await this.put(
+                '/v2/routers/configs/assign',
+                [{ routerId: this.routerId, configId: null }]
             );
+
+            this.router.configId = null;
 
             return true;
         } catch {

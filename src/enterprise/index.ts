@@ -30,85 +30,22 @@ export { UserTerminal } from './models/user_terminal';
 
 export default class StarlinkAPI extends BaseAPI {
     /**
-     * Fetches accounts of the current authenticated user
+     * Fetches the account associated with the authenticated v2 service account.
      *
-     * @param options
+     * v2 service accounts are scoped to a single Starlink account, so this returns an
+     * array of one. The array shape is preserved so existing consumer code continues
+     * to work.
      */
-    public async fetch_accounts (
-        options: Partial<{
-            /**
-             * If set to true, fetches all pages automatically
-             * Must set to false for `limit` and `page` to be honored
-             *
-             * @default true
-             */
-            all: boolean;
-            /**
-             * The number of accounts to return at a time
-             *
-             * @default 50
-             */
-            limit: number;
-            /**
-             * The index of the page, starting at 0
-             *
-             * @default 0
-             */
-            page: number;
-            /**
-             * The region code of the account
-             */
-            regionCode: string[];
-        }> = {
-            all: true,
-            limit: 50,
-            page: 0,
-            regionCode: []
-        }
-    ): Promise<Account[]> {
-        options.limit ??= 50;
-        options.page ??= 0;
-        options.all ??= true;
-        let response: Starlink.Common.PagedContent<Starlink.Management.APIResponse.Account[]>;
+    public async fetch_accounts (): Promise<Account[]> {
+        const response = await this.get<Starlink.Common.Content<Starlink.Management.APIResponse.Account>>(
+            '/v2/account'
+        );
 
-        if (!options.all) {
-            response = await this.get(
-                '/enterprise/v1/accounts',
-                options
-            );
-
-            return response.content.results.map(account => new Account(
-                this.client_id,
-                this.client_secret,
-                account
-            ));
-        } else {
-            const results: Account[] = [];
-            let page = 0;
-
-            do {
-                response = await this.get(
-                    '/enterprise/v1/accounts',
-                    {
-                        ...options,
-                        limit: 100,
-                        page: page++
-                    }
-                );
-
-                results.push(...response.content.results.map(account => new Account(
-                    this.client_id,
-                    this.client_secret,
-                    account
-                )));
-            } while (!response.content.isLastPage);
-
-            if (results.length !== response.content.totalCount) {
-                throw new Error('Could not fetch all results');
-            }
-
-            return results;
-        }
+        return [new Account(
+            this.client_id,
+            this.client_secret,
+            response.content
+        )];
     }
 }
 

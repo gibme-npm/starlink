@@ -19,6 +19,7 @@
 // SOFTWARE.
 
 import BaseAPI, { Starlink } from '../api/base_api';
+import Account from './account';
 
 import type { UserTerminal } from './user_terminal';
 
@@ -49,15 +50,14 @@ export default class ServiceLine extends BaseAPI {
         terminalOrId: string | UserTerminal
     ): Promise<boolean> {
         try {
-            let url = `/enterprise/v1/account/${this.accountNumber}/user-terminals/`;
+            const deviceId = typeof terminalOrId === 'string'
+                ? terminalOrId
+                : terminalOrId.userTerminalId;
 
-            if (typeof terminalOrId === 'string') {
-                url += `${terminalOrId}/${this.serviceLineNumber}`;
-            } else {
-                url += `${terminalOrId.userTerminalId}/${this.serviceLineNumber}`;
-            }
-
-            await this.post(url);
+            await this.post(
+                `/v2/service-lines/${this.serviceLineNumber}/user-terminals`,
+                { deviceId }
+            );
 
             return true;
         } catch {
@@ -66,68 +66,26 @@ export default class ServiceLine extends BaseAPI {
     }
 
     /**
-     * Fetches all daily data usage by asset for the last 1 month(s) plus the current cycle
+     * Fetches data usage for this service line via the v2 data-usage query endpoint.
      *
-     * @param options
+     * v2 does not expose the per-day data-usage bin breakdown that v1 returned. The response
+     * is the same shape used by `Account.fetch_realtime_data_tracking()`: billing cycles with
+     * per-day GB totals.
      */
-    public async fetch_daily_usage (options: Partial<{
-        /**
-         * When true; unknown data bins will be included in results.
-         */
-        includeUnknownDataBin: boolean;
-    }> = {}): Promise<Starlink.Management.Response.ServiceLineDataUsage> {
-        const response = await this.get<Starlink.Common.Content<Starlink.Management.APIResponse.ServiceLineDataUsage>>(
-            `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/billing-cycle/all`,
-            options
+    public async fetch_daily_usage (): Promise<Starlink.Management.Response.RealtimeDataTracking> {
+        const records = await this.paginate<Starlink.Management.APIResponse.RealtimeDataTracking>(
+            'POST',
+            '/v2/data-usage/query',
+            { body: { serviceLineNumbers: [this.serviceLineNumber] } }
         );
 
-        const record = response.content;
+        const record = records.find(r => r.serviceLineNumber === this.serviceLineNumber);
 
-        return {
-            ...record,
-            billingCycles: record.billingCycles?.map(cycle => {
-                return {
-                    ...cycle,
-                    dailyDataUsages: cycle.dailyDataUsages?.map(usage => {
-                        return {
-                            ...usage,
-                            date: new Date(usage.date)
-                        };
-                    }) || null,
-                    endDate: new Date(cycle.endDate),
-                    startDate: new Date(cycle.startDate)
-                };
-            }) || null,
-            endDate: new Date(record.endDate),
-            lastUpdated: record.lastUpdated !== null ? new Date(record.lastUpdated) : null,
-            servicePlan: {
-                ...record.servicePlan,
-                activeFrom: record.servicePlan.activeFrom !== null ? new Date(record.servicePlan.activeFrom) : null,
-                dataPoolUsage: record.servicePlan.dataPoolUsage
-                    ? {
-                        ...record.servicePlan.dataPoolUsage,
-                        dataBlocks: record.servicePlan.dataPoolUsage.dataBlocks?.map(elem => {
-                            return {
-                                ...elem,
-                                expirationDateUtc: new Date(elem.expirationDateUtc),
-                                startDateUtc: new Date(elem.startDateUtc)
-                            };
-                        }) || [],
-                        lastUpdated: new Date(record.servicePlan.dataPoolUsage.lastUpdated)
-                    }
-                    : undefined,
-                overageLineDeactivatedDate: record.servicePlan.overageLineDeactivatedDate !== null
-                    ? new Date(record.servicePlan.overageLineDeactivatedDate)
-                    : null,
-                subscriptionActiveFrom: record.servicePlan.subscriptionActiveFrom !== null
-                    ? new Date(record.servicePlan.subscriptionActiveFrom)
-                    : null,
-                subscriptionEndDate: record.servicePlan.subscriptionEndDate !== null
-                    ? new Date(record.servicePlan.subscriptionEndDate)
-                    : null
-            },
-            startDate: new Date(record.startDate)
-        };
+        if (!record) {
+            throw new Error(`No data-usage record returned for service line ${this.serviceLineNumber}`);
+        }
+
+        return Account.transformRealtimeDataTracking(record);
     }
 
     /**
@@ -144,8 +102,7 @@ export default class ServiceLine extends BaseAPI {
             periodStart: string;
             productReferenceId: string;
         }[]>>(
-            `/enterprise/v1/account/${this.accountNumber}/` +
-            `service-lines/${this.serviceLineNumber}/billing-cycle/partial-periods`
+            `/v2/service-lines/${this.serviceLineNumber}/billing-cycles/partial-periods`
         );
 
         return response.content.map(record => {
@@ -162,7 +119,7 @@ export default class ServiceLine extends BaseAPI {
      */
     public async opt_in (): Promise<Starlink.Management.Response.OptInProduct> {
         const response = await this.post<Starlink.Common.Content<Starlink.Management.APIResponse.OptInProduct>>(
-            `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/opt-in`
+            `/v2/service-lines/${this.serviceLineNumber}/data/opt-in`
         );
 
         const record = response.content;
@@ -178,8 +135,8 @@ export default class ServiceLine extends BaseAPI {
      * Opt out of product for subscription
      */
     public async opt_out (): Promise<Starlink.Management.Response.OptInProduct> {
-        const response = await this.delete<Starlink.Common.Content<Starlink.Management.APIResponse.OptInProduct>>(
-            `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/opt-in`
+        const response = await this.post<Starlink.Common.Content<Starlink.Management.APIResponse.OptInProduct>>(
+            `/v2/service-lines/${this.serviceLineNumber}/data/opt-out`
         );
 
         const record = response.content;
@@ -200,15 +157,13 @@ export default class ServiceLine extends BaseAPI {
         terminalOrId: string | UserTerminal
     ): Promise<boolean> {
         try {
-            let url = `/enterprise/v1/account/${this.accountNumber}/user-terminals/`;
+            const deviceId = typeof terminalOrId === 'string'
+                ? terminalOrId
+                : terminalOrId.userTerminalId;
 
-            if (typeof terminalOrId === 'string') {
-                url += `${terminalOrId}/${this.serviceLineNumber}`;
-            } else {
-                url += `${terminalOrId.userTerminalId}/${this.serviceLineNumber}`;
-            }
-
-            await this.delete(url);
+            await this.delete(
+                `/v2/service-lines/${this.serviceLineNumber}/user-terminals/${deviceId}`
+            );
 
             return true;
         } catch {
@@ -225,7 +180,7 @@ export default class ServiceLine extends BaseAPI {
         if (this.nickname_updated) {
             try {
                 response = await this.put<Starlink.Common.Content<Starlink.Management.APIResponse.ServiceLine>>(
-                    `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/nickname`,
+                    `/v2/service-lines/${this.serviceLineNumber}/nickname`,
                     { nickname: this.nickname }
                 );
 
@@ -238,8 +193,8 @@ export default class ServiceLine extends BaseAPI {
         if (this.product_updated) {
             try {
                 response = await this.put<Starlink.Common.Content<Starlink.Management.APIResponse.ServiceLine>>(
-                    // eslint-disable-next-line max-len
-                    `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/product/${this.productReferenceId}`
+                    `/v2/service-lines/${this.serviceLineNumber}/product`,
+                    { productReferenceId: this.productReferenceId }
                 );
 
                 this.product_updated = false;
@@ -251,7 +206,7 @@ export default class ServiceLine extends BaseAPI {
         if (this.public_ip_updated) {
             try {
                 response = await this.put<Starlink.Common.Content<Starlink.Management.APIResponse.ServiceLine>>(
-                    `/enterprise/v1/account/${this.accountNumber}/service-lines/${this.serviceLineNumber}/public-ip`,
+                    `/v2/service-lines/${this.serviceLineNumber}/public-ip`,
                     { publicIp: this.publicIp }
                 );
 

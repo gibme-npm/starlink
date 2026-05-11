@@ -166,14 +166,6 @@ describe('Unit Tests', async () => {
             it('add_user_terminal()', { skip: 'Changes account data' }, async () => {
             });
 
-            it('check_capacity()', { skip: false }, async (t) => {
-                if (!account) return t.skip('No account available');
-
-                // we can't really verify the result, as Starlink capacity changes
-                await account.check_capacity(39.8097343, -98.5556199)
-                    .catch(() => assert.fail());
-            });
-
             it('create_address()', { skip: 'Changes account data' }, async () => {
             });
 

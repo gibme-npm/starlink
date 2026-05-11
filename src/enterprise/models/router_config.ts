@@ -41,7 +41,7 @@ export default class RouterConfig extends BaseAPI {
     public async save (): Promise<boolean> {
         try {
             const response = await this.put<Starlink.Common.Content<Starlink.Management.APIResponse.RouterConfig>>(
-                `/enterprise/v1/account/${this.accountNumber}/routers/configs/${this.configId}`,
+                `/v2/routers/configs/${this.configId}`,
                 {
                     nickname: this.nickname,
                     routerConfigJson: JSON.stringify(this.config)

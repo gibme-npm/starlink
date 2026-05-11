@@ -71,22 +71,6 @@ export namespace Starlink {
                 totalStandardGB: number;
             }
 
-            export interface DataBucket {
-                dataBucket: number;
-                totalGB: number;
-            }
-
-            export interface ServiceLineBillingCycle<DateType extends Date | string = string> {
-                dailyDataUsages: {
-                    dataUsageBins: DataBucket[] | null;
-                    date: DateType;
-                }[] | null;
-                dataUsage: DataBucket[] | null;
-                endDate: DateType;
-                overageLines: OverageLine[] | null;
-                startDate: DateType;
-            }
-
             export interface DataCategoryMapping {
                 [key: string]: any;
                 nonBillableGB: number;
@@ -176,12 +160,6 @@ export namespace Starlink {
                 serviceLineNumber: string | null;
                 servicePlan: ServicePlan<DateType>;
                 startDate: DateType;
-            }
-
-            export interface ServiceLineDataUsage<DateType extends Date | string = string>
-                extends Omit<RealtimeDataTracking<DateType>, 'billingCycles' | 'serviceLineNumber'> {
-                assetNumber: string | null;
-                billingCycles: ServiceLineBillingCycle<DateType>[] | null;
             }
 
             export interface Router<DateType extends Date | string = string> {
@@ -372,8 +350,6 @@ export namespace Starlink {
 
             export type ServiceLine = Components.ServiceLine;
 
-            export type ServiceLineDataUsage = Components.ServiceLineDataUsage;
-
             export type OptInProduct = Components.OptInProduct;
         }
 
@@ -401,8 +377,6 @@ export namespace Starlink {
             export interface ServiceLine extends Components.ServiceLine<Date> {
                 accountNumber: string;
             }
-
-            export type ServiceLineDataUsage = Components.ServiceLineDataUsage<Date>;
 
             export type OptInProduct = Components.OptInProduct<Date>;
         }

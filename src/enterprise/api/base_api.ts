@@ -48,7 +48,7 @@ export default abstract class BaseAPI {
 
     private static token?: Starlink.Token;
 
-    public readonly baseUrl = 'https://web-api.starlink.com';
+    public readonly baseUrl = 'https://starlink.com/api/public';
 
     constructor (
         public readonly client_id: string,
@@ -242,16 +242,18 @@ export default abstract class BaseAPI {
      *
      * @param endpoint
      * @param payload
+     * @param params
      * @protected
      */
     protected async post<Type extends Starlink.Response = any> (
         endpoint: string,
-        payload?: object
+        payload?: object,
+        params: Record<string, any> = {}
     ): Promise<Type> {
         return this.execute(
             'POST',
             endpoint,
-            {},
+            params,
             payload
         );
     }
@@ -273,5 +275,60 @@ export default abstract class BaseAPI {
             {},
             payload
         );
+    }
+
+    /**
+     * Walks a paginated endpoint, returning every record.
+     *
+     * When `all: false`, fetches the single page given by `page` and returns its results.
+     * When `all: true` (default), walks pages until `isLastPage`, asserting that the
+     * total received matches `totalCount` from the wire response.
+     *
+     * @protected
+     */
+    protected async paginate<Record_> (
+        method: 'GET' | 'POST',
+        endpoint: string,
+        opts: Partial<{
+            all: boolean;
+            page: number;
+            filters: Record<string, any>;
+            body: object;
+        }> = {}
+    ): Promise<Record_[]> {
+        const all = opts.all ?? true;
+        const filters = opts.filters ?? {};
+        const body = opts.body;
+        const fetchPage = async (page: number) => method === 'POST'
+            ? await this.post<Starlink.Common.PagedContent<Record_[]>>(
+                endpoint,
+                body,
+                { ...filters, page }
+            )
+            : await this.get<Starlink.Common.PagedContent<Record_[]>>(
+                endpoint,
+                { ...filters, page }
+            );
+
+        if (!all) {
+            const response = await fetchPage(opts.page ?? 0);
+
+            return response.content.results;
+        }
+
+        const results: Record_[] = [];
+        let cursor = 0;
+        let response: Starlink.Common.PagedContent<Record_[]>;
+
+        do {
+            response = await fetchPage(cursor++);
+            results.push(...response.content.results);
+        } while (!response.content.isLastPage);
+
+        if (results.length !== response.content.totalCount) {
+            throw new Error('Could not fetch all results');
+        }
+
+        return results;
     }
 }

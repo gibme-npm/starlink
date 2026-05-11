@@ -44,19 +44,16 @@ export default class UserTerminal extends BaseAPI {
         serviceLineOrNumber: ServiceLine | string
     ): Promise<boolean> {
         try {
-            let url = `/enterprise/v1/account/${this.accountNumber}/user-terminals/${this.userTerminalId}/`;
-
-            if (typeof serviceLineOrNumber === 'string') {
-                url += serviceLineOrNumber;
-            } else {
-                url += serviceLineOrNumber.serviceLineNumber;
-            }
-
-            await this.post(url);
-
-            this.userTerminal.serviceLineNumber = typeof serviceLineOrNumber === 'string'
+            const serviceLineNumber = typeof serviceLineOrNumber === 'string'
                 ? serviceLineOrNumber
                 : serviceLineOrNumber.serviceLineNumber;
+
+            await this.post(
+                `/v2/service-lines/${serviceLineNumber}/user-terminals`,
+                { deviceId: this.userTerminalId }
+            );
+
+            this.userTerminal.serviceLineNumber = serviceLineNumber;
 
             return true;
         } catch {
@@ -70,8 +67,7 @@ export default class UserTerminal extends BaseAPI {
     public async remove_from_service_line (): Promise<boolean> {
         try {
             await this.delete(
-                `/enterprise/v1/account/${this.accountNumber}` +
-                `/user-terminals/${this.userTerminalId}/${this.serviceLineNumber}`
+                `/v2/service-lines/${this.serviceLineNumber}/user-terminals/${this.userTerminalId}`
             );
 
             this.userTerminal.serviceLineNumber = null;

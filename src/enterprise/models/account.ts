@@ -39,9 +39,8 @@ export default class Account extends BaseAPI {
      * Transforms the API response for a Realtime Data Tracking request into an actual response
      *
      * @param record
-     * @private
      */
-    private transformRealtimeDataTracking (
+    public static transformRealtimeDataTracking (
         record: Starlink.Management.APIResponse.RealtimeDataTracking
     ): Starlink.Management.Response.RealtimeDataTracking {
         return {
@@ -126,35 +125,15 @@ export default class Account extends BaseAPI {
         deviceId: string
     ): Promise<boolean> {
         try {
-            await this.post(`/enterprise/v1/account/${this.accountNumber}/user-terminals/${deviceId}`);
+            await this.post(
+                '/v2/user-terminals',
+                { deviceId }
+            );
 
             return true;
         } catch {
             return false;
         }
-    }
-
-    /**
-     * Checks the available capacity for the given latitude and longitude
-     *
-     * @param latitude
-     * @param longitude
-     */
-    public async check_capacity (
-        latitude: number,
-        longitude: number
-    ): Promise<number> {
-        const response = await this.post<Starlink.Common.Content<{
-            availableCapacity: number;
-        }>>(
-            `/enterprise/v1/account/${this.accountNumber}/addresses/check-capacity`,
-            {
-                latitude,
-                longitude
-            }
-        );
-
-        return response.content.availableCapacity;
     }
 
     /**
@@ -166,7 +145,7 @@ export default class Account extends BaseAPI {
         address: Starlink.Management.Request.CreateAddress
     ): Promise<Starlink.Management.Response.Address> {
         const response = await this.post<Starlink.Common.Content<Starlink.Management.APIResponse.Address>>(
-            `/enterprise/v1/account/${this.accountNumber}/addresses`,
+            '/v2/addresses',
             address
         );
 
@@ -184,7 +163,7 @@ export default class Account extends BaseAPI {
         routerConfig: any
     ): Promise<RouterConfig> {
         const response = await this.post<Starlink.Common.Content<Starlink.Management.APIResponse.RouterConfig>>(
-            `/enterprise/v1/account/${this.accountNumber}/routers/configs`,
+            '/v2/routers/configs',
             {
                 nickname,
                 routerConfigJson: JSON.stringify(routerConfig)
@@ -218,7 +197,7 @@ export default class Account extends BaseAPI {
         productReferenceId: string
     ): Promise<ServiceLine> {
         const response = await this.post<Starlink.Common.Content<Starlink.Management.APIResponse.ServiceLine>>(
-            `/enterprise/v1/account/${this.accountNumber}/service-lines`,
+            '/v2/service-lines',
             {
                 addressReferenceId,
                 productReferenceId
@@ -248,7 +227,7 @@ export default class Account extends BaseAPI {
         addressReferenceId: string
     ): Promise<Starlink.Management.Response.Address> {
         const response = await this.get<Starlink.Common.Content<Starlink.Management.APIResponse.Address>>(
-            `/enterprise/v1/account/${this.accountNumber}/addresses/${addressReferenceId}`
+            `/v2/addresses/${addressReferenceId}`
         );
 
         return response.content;
@@ -267,17 +246,11 @@ export default class Account extends BaseAPI {
             addressIds: string[];
             /**
              * If set to true, fetches all pages automatically
-             * Must set to false for `limit` and `page` to be honored
+             * Must set to false for `page` to be honored
              *
              * @default true
              */
             all: boolean;
-            /**
-             * The number of addresses to return at a time
-             *
-             * @default 50
-             */
-            limit: number;
             /**
              * Filter by metadata
              */
@@ -288,47 +261,15 @@ export default class Account extends BaseAPI {
              * @default 0
              */
             page: number;
-        }> = {
-            all: true,
-            limit: 50,
-            page: 0
-        }
+        }> = {}
     ): Promise<Starlink.Management.Response.Address[]> {
-        options.limit ??= 50;
-        options.page ??= 0;
-        options.all ??= true;
-        let response: Starlink.Common.PagedContent<Starlink.Management.APIResponse.Address[]>;
+        const { all, page, ...filters } = options;
 
-        if (!options.all) {
-            response = await this.get(
-                `/enterprise/v1/account/${this.accountNumber}/addresses`,
-                options
-            );
-
-            return response.content.results;
-        } else {
-            const results: Starlink.Management.Response.Address[] = [];
-            let page = 0;
-
-            do {
-                response = await this.get(
-                    `/enterprise/v1/account/${this.accountNumber}/addresses`,
-                    {
-                        ...options,
-                        limit: 100,
-                        page: page++
-                    }
-                );
-
-                results.push(...response.content.results);
-            } while (!response.content.isLastPage);
-
-            if (results.length !== response.content.totalCount) {
-                throw new Error('Could not fetch all results');
-            }
-
-            return results;
-        }
+        return this.paginate<Starlink.Management.Response.Address>(
+            'GET',
+            '/v2/addresses',
+            { all, page, filters }
+        );
     }
 
     /**
@@ -338,63 +279,24 @@ export default class Account extends BaseAPI {
         options: Partial<{
             /**
              * If set to true, fetches all pages automatically
-             * Must set to false for `limit` and `page` to be honored
+             * Must set to false for `page` to be honored
              *
              * @default true
              */
             all: boolean;
-            /**
-             * The number of accounts to return at a time
-             *
-             * @default 500
-             */
-            limit: number;
             /**
              * The index of the page, starting at 0
              *
              * @default 0
              */
             page: number;
-        }> = { all: true, limit: 500, page: 0 }
+        }> = {}
     ): Promise<Starlink.Management.APIResponse.Product[]> {
-        options.limit ??= 500;
-        options.page ??= 0;
-        options.all ??= true;
-
-        let response: Starlink.Common.PagedContent<Starlink.Management.Components.Product[]>;
-
-        if (!options.all) {
-            response = await this.get(
-                `/enterprise/v1/account/${this.accountNumber}/service-lines/available-products`,
-                {
-                    ...options,
-                    pageIndex: options.page,
-                    pageLimit: options.limit
-                });
-
-            return response.content.results;
-        } else {
-            const results: Starlink.Management.APIResponse.Product[] = [];
-            let pageIndex = 0;
-
-            do {
-                response = await this.get(
-                    `/enterprise/v1/account/${this.accountNumber}/service-lines/available-products`,
-                    {
-                        ...options,
-                        pageIndex: pageIndex++,
-                        pageLimit: 500
-                    });
-
-                results.push(...response.content.results);
-            } while (!response.content.isLastPage);
-
-            if (results.length !== response.content.totalCount) {
-                throw new Error('Could not fetch all results');
-            }
-
-            return results;
-        }
+        return this.paginate<Starlink.Management.APIResponse.Product>(
+            'GET',
+            '/v2/products',
+            { all: options.all, page: options.page }
+        );
     }
 
     /**
@@ -406,7 +308,7 @@ export default class Account extends BaseAPI {
         options: Partial<{
             /**
              * If set to true, fetches all pages automatically
-             * Must set to false for `limit` and `page` to be honored
+             * Must set to false for `page` to be honored
              *
              * @default true
              */
@@ -419,48 +321,18 @@ export default class Account extends BaseAPI {
             page: number;
             previousBillingCycles: number;
             queryStartDateParam: string;
-            serviceLinesFilter: string[];
-        }> = {
-            all: true,
-            page: 0
-        }
+            serviceLineNumbers: string[];
+        }> = {}
     ): Promise<Starlink.Management.Response.RealtimeDataTracking[]> {
-        options.page ??= 0;
-        options.all ??= true;
-        let response: Starlink.Common.PagedContent<Starlink.Management.APIResponse.RealtimeDataTracking[]>;
+        const { all, page, ...body } = options;
 
-        if (!options.all) {
-            response = await this.post(
-                `/enterprise/v1/accounts/${this.accountNumber}/billing-cycles/query`,
-                {
-                    ...options,
-                    pageIndex: options.page
-                }
-            );
+        const records = await this.paginate<Starlink.Management.APIResponse.RealtimeDataTracking>(
+            'POST',
+            '/v2/data-usage/query',
+            { all, page, body }
+        );
 
-            return response.content.results.map(record => this.transformRealtimeDataTracking(record));
-        } else {
-            const results: Starlink.Management.Response.RealtimeDataTracking[] = [];
-            let pageIndex = 0;
-
-            do {
-                response = await this.post(
-                    `/enterprise/v1/accounts/${this.accountNumber}/billing-cycles/query`,
-                    {
-                        ...options,
-                        pageIndex: pageIndex++
-                    }
-                );
-
-                results.push(...response.content.results.map(record => this.transformRealtimeDataTracking(record)));
-            } while (!response.content.isLastPage);
-
-            if (results.length !== response.content.totalCount) {
-                throw new Error('Could not fetch all results');
-            }
-
-            return results;
-        }
+        return records.map(record => Account.transformRealtimeDataTracking(record));
     }
 
     /**
@@ -470,7 +342,7 @@ export default class Account extends BaseAPI {
      */
     public async fetch_router (routerId: string): Promise<Router> {
         const response = await this.get<Starlink.Common.Content<Starlink.Management.APIResponse.Router>>(
-            `/enterprise/v1/account/${this.accountNumber}/routers/${routerId}`
+            `/v2/routers/${routerId}`
         );
 
         return new Router(
@@ -487,7 +359,7 @@ export default class Account extends BaseAPI {
      */
     public async fetch_router_config (configId: string): Promise<RouterConfig> {
         const response = await this.get<Starlink.Common.Content<Starlink.Management.APIResponse.RouterConfig>>(
-            `/enterprise/v1/account/${this.accountNumber}/routers/configs/${configId}`
+            `/v2/routers/configs/${configId}`
         );
 
         const {
@@ -526,71 +398,26 @@ export default class Account extends BaseAPI {
              * @default 0
              */
             page: number;
-        }> = {
-            all: true,
-            page: 0
-        }
+        }> = {}
     ): Promise<RouterConfig[]> {
-        options.page ??= 0;
-        options.all ??= true;
-        let response: Starlink.Common.PagedContent<Starlink.Management.APIResponse.RouterConfig[]>;
+        const records = await this.paginate<Starlink.Management.APIResponse.RouterConfig>(
+            'GET',
+            '/v2/routers/configs',
+            { all: options.all, page: options.page }
+        );
 
-        if (!options.all) {
-            response = await this.get(
-                `/enterprise/v1/account/${this.accountNumber}/routers/configs`,
-                options
+        return records.map(record => {
+            const { routerConfigJson, ...rest } = record;
+
+            return new RouterConfig(
+                this.client_id,
+                this.client_secret,
+                {
+                    ...rest,
+                    routerConfig: JSON.parse(routerConfigJson)
+                }
             );
-
-            return response.content.results.map(record => {
-                const {
-                    routerConfigJson,
-                    ...rest
-                } = record;
-                const routerConfig = JSON.parse(routerConfigJson);
-
-                return new RouterConfig(
-                    this.client_id,
-                    this.client_secret,
-                    {
-                        ...rest,
-                        routerConfig
-                    }
-                );
-            });
-        } else {
-            const results: RouterConfig[] = [];
-            let page = 0;
-
-            do {
-                response = await this.get(
-                    `/enterprise/v1/account/${this.accountNumber}/routers/configs`,
-                    { page: page++ }
-                );
-
-                results.push(...response.content.results.map(record => {
-                    const {
-                        routerConfigJson,
-                        ...rest
-                    } = record;
-                    const routerConfig = JSON.parse(routerConfigJson);
-
-                    return new RouterConfig(
-                        this.client_id,
-                        this.client_secret,
-                        {
-                            ...rest,
-                            routerConfig
-                        }
-                    );
-                }));
-            } while (!response.content.isLastPage);
-
-            if (results.length !== response.content.totalCount) {
-                throw new Error('Could not fetch all results');
-            }
-
-            return results;
-        }
+        });
     }
 
     /**
@@ -600,7 +427,7 @@ export default class Account extends BaseAPI {
      */
     public async fetch_service_line (serviceLineNumber: string): Promise<ServiceLine> {
         const response = await this.get<Starlink.Common.Content<Starlink.Management.APIResponse.ServiceLine>>(
-            `/enterprise/v1/account/${this.accountNumber}/service-lines/${serviceLineNumber}`
+            `/v2/service-lines/${serviceLineNumber}`
         );
 
         const record = response.content;
@@ -630,17 +457,11 @@ export default class Account extends BaseAPI {
             addressReferenceId: string;
             /**
              * If set to true, fetches all pages automatically
-             * Must set to false for `limit` and `page` to be honored
+             * Must set to false for `page` to be honored
              *
              * @default true
              */
             all: boolean;
-            /**
-             * The number of accounts to return at a time
-             *
-             * @default 50
-             */
-            limit: number;
             /**
              * Sort the paginated results by created date
              */
@@ -655,65 +476,26 @@ export default class Account extends BaseAPI {
              * Filter by partial match of UT ID, serial number, or kit serial number
              */
             searchString: string;
-        }> = {
-            all: true,
-            limit: 50,
-            page: 0
-        }
+        }> = {}
     ): Promise<ServiceLine[]> {
-        options.limit ??= 50;
-        options.page ??= 0;
-        options.all ??= true;
-        let response: Starlink.Common.PagedContent<Starlink.Management.APIResponse.ServiceLine[]>;
+        const { all, page, ...filters } = options;
 
-        if (!options.all) {
-            response = await this.get(
-                `/enterprise/v1/account/${this.accountNumber}/service-lines`,
-                options
-            );
+        const records = await this.paginate<Starlink.Management.APIResponse.ServiceLine>(
+            'GET',
+            '/v2/service-lines',
+            { all, page, filters }
+        );
 
-            return response.content.results.map(record => new ServiceLine(
-                this.client_id,
-                this.client_secret,
-                {
-                    ...record,
-                    accountNumber: this.accountNumber,
-                    endDate: record.endDate !== null ? new Date(record.endDate) : null,
-                    startDate: record.startDate !== null ? new Date(record.startDate) : null
-                }
-            ));
-        } else {
-            const results: ServiceLine[] = [];
-            let page = 0;
-
-            do {
-                response = await this.get(
-                    `/enterprise/v1/account/${this.accountNumber}/service-lines`,
-                    {
-                        ...options,
-                        limit: 100,
-                        page: page++
-                    }
-                );
-
-                results.push(...response.content.results.map(record => new ServiceLine(
-                    this.client_id,
-                    this.client_secret,
-                    {
-                        ...record,
-                        accountNumber: this.accountNumber,
-                        endDate: record.endDate !== null ? new Date(record.endDate) : null,
-                        startDate: record.startDate !== null ? new Date(record.startDate) : null
-                    }
-                )));
-            } while (!response.content.isLastPage);
-
-            if (results.length !== response.content.totalCount) {
-                throw new Error('Could not fetch all results');
+        return records.map(record => new ServiceLine(
+            this.client_id,
+            this.client_secret,
+            {
+                ...record,
+                accountNumber: this.accountNumber,
+                endDate: record.endDate !== null ? new Date(record.endDate) : null,
+                startDate: record.startDate !== null ? new Date(record.startDate) : null
             }
-
-            return results;
-        }
+        ));
     }
 
     /**
@@ -724,12 +506,8 @@ export default class Account extends BaseAPI {
     public async fetch_user_terminals (
         options: Partial<{
             /**
-             * Only return UTs that are active on this account
-             */
-            active: boolean;
-            /**
              * If set to true, fetches all pages automatically
-             * Must set to false for `limit` and `page` to be honored
+             * Must set to false for `page` to be honored
              *
              * @default true
              */
@@ -738,12 +516,6 @@ export default class Account extends BaseAPI {
              * Filter by user terminals with or without a services lines. Omitting this will return both sets
              */
             hasServiceLine: boolean;
-            /**
-             * The number of accounts to return at a time
-             *
-             * @default 50
-             */
-            limit: number;
             /**
              * The index of the page, starting at 0
              *
@@ -762,57 +534,20 @@ export default class Account extends BaseAPI {
              * Filter by a set of user terminal IDs
              */
             userTerminalIds: string[];
-        }> = {
-            all: true,
-            limit: 50,
-            page: 0
-        }
+        }> = {}
     ): Promise<Starlink.Management.Response.UserTerminal[]> {
-        options.limit ??= 50;
-        options.page ??= 0;
-        options.all ??= true;
-        let response: Starlink.Common.PagedContent<Starlink.Management.APIResponse.UserTerminal[]>;
+        const { all, page, ...filters } = options;
 
-        if (!options.all) {
-            response = await this.get(
-                `/enterprise/v1/account/${this.accountNumber}/user-terminals`,
-                options
-            );
+        const records = await this.paginate<Starlink.Management.APIResponse.UserTerminal>(
+            'GET',
+            '/v2/user-terminals',
+            { all, page, filters }
+        );
 
-            return response.content.results.map(record => {
-                return {
-                    ...record,
-                    accountNumber: this.accountNumber
-                };
-            });
-        } else {
-            const results: Starlink.Management.Response.UserTerminal[] = [];
-            let page = 0;
-
-            do {
-                response = await this.get(
-                    `/enterprise/v1/account/${this.accountNumber}/user-terminals`,
-                    {
-                        ...options,
-                        limit: 100,
-                        page: page++
-                    }
-                );
-
-                results.push(...response.content.results.map(record => {
-                    return {
-                        ...record,
-                        accountNumber: this.accountNumber
-                    };
-                }));
-            } while (!response.content.isLastPage);
-
-            if (results.length !== response.content.totalCount) {
-                throw new Error('Could not fetch all results');
-            }
-
-            return results;
-        }
+        return records.map(record => ({
+            ...record,
+            accountNumber: this.accountNumber
+        }));
     }
 
     /**
@@ -836,7 +571,7 @@ export default class Account extends BaseAPI {
     ): Promise<boolean> {
         try {
             await this.delete(
-                `/enterprise/v1/account/${this.accountNumber}/service-lines/${serviceLineNumber}`,
+                `/v2/service-lines/${serviceLineNumber}`,
                 options
             );
 
@@ -853,7 +588,7 @@ export default class Account extends BaseAPI {
      */
     public async remove_user_terminal (deviceId: string): Promise<boolean> {
         try {
-            await this.delete(`/enterprise/v1/account/${this.accountNumber}/user-terminals/${deviceId}`);
+            await this.delete(`/v2/user-terminals/${deviceId}`);
 
             return true;
         } catch {
@@ -889,9 +624,8 @@ export default class Account extends BaseAPI {
         maxLingerMs: number = 100
     ): Promise<Starlink.Telemetry.Response.Data> {
         const response = await this.post<Starlink.Telemetry.APIResponse.Data>(
-            '/telemetry/stream/v1/telemetry',
+            '/v2/telemetry/stream',
             {
-                accountNumber: this.accountNumber,
                 batchSize,
                 maxLingerMs
             }
@@ -956,9 +690,10 @@ export default class Account extends BaseAPI {
     public async update_address (
         address: Starlink.Management.Request.UpdateAddress
     ): Promise<Starlink.Management.Response.Address> {
+        const { addressReferenceId, ...body } = address;
         const response = await this.put<Starlink.Common.Content<Starlink.Management.APIResponse.Address>>(
-            `/enterprise/v1/account/${this.accountNumber}/addresses`,
-            address
+            `/v2/addresses/${addressReferenceId}`,
+            body
         );
 
         return response.content;
@@ -972,22 +707,21 @@ export default class Account extends BaseAPI {
     public async update_default_router_config (
         configId: string
     ): Promise<boolean> {
-        const response = await this.put<Starlink.Common.PagedContent<Starlink.Management.APIResponse.Account[]>>(
-            `/enterprise/v1/accounts/${this.accountNumber}/update-default-router-config`,
-            { configId }
-        );
+        try {
+            await this.put(
+                '/v2/routers/configs/default',
+                { configId }
+            );
 
-        const account = response.content.results
-            .filter(elem => elem.accountNumber === this.accountNumber)
-            .shift();
-
-        if (account) {
-            this.account = account;
+            this.account = {
+                ...this.account,
+                defaultRouterConfigId: configId
+            };
 
             return true;
+        } catch {
+            return false;
         }
-
-        return false;
     }
 
     /**
